@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Card Approvals | Admin Portal</title>
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <link rel="stylesheet" href="../assets/css/admin.css">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+</head>
+<body class="admin-layout">
+
+  <!-- Admin Sidebar -->
+  <aside class="admin-sidebar">
+    <div class="admin-sidebar-close"><i class="ph-bold ph-x"></i></div>
+    <div class="admin-sidebar-header">
+      <div class="flex items-center gap-12 mb-8">
+        <div class="brand-logo" style="width: 32px; height: 32px; background: var(--danger); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+          <i class="ph-fill ph-shield-check text-white"></i>
+        </div>
+        <div class="font-bold">Staff Portal</div>
+      </div>
+      <div class="admin-badge">Admin Access</div>
+    </div>
+    
+    <nav class="admin-sidebar-nav">
+      <div style="font-size: 0.65rem; color: var(--text-500); text-transform: uppercase; margin: 12px 12px 4px; font-weight: bold;">Core Management</div>
+      <a href="dashboard.html" class="nav-item">
+        <i class="ph-bold ph-squares-four nav-icon"></i> Dashboard
+      </a>
+      <a href="users.html" class="nav-item">
+        <i class="ph-bold ph-users nav-icon"></i> Client Accounts
+      </a>
+      <a href="transfers.html" class="nav-item">
+        <i class="ph-bold ph-arrows-left-right nav-icon"></i> Transfers
+      </a>
+      
+      <div style="font-size: 0.65rem; color: var(--text-500); text-transform: uppercase; margin: 24px 12px 4px; font-weight: bold;">Approvals & Risk</div>
+      <a href="kyc-review.html" class="nav-item">
+        <i class="ph-bold ph-identification-card nav-icon"></i> KYC Approvals
+      </a>
+      <a href="cards.html" class="nav-item active">
+        <i class="ph-bold ph-credit-card nav-icon"></i> Card Requests
+      </a>
+    </nav>
+    
+    <div class="admin-sidebar-footer">
+      <button class="btn btn-ghost w-full" style="display: flex; justify-content: flex-start; gap: 8px; color: var(--text-300);" onclick="document.getElementById('logout-btn').click()">
+        <i class="ph-bold ph-sign-out"></i> End Session
+      </button>
+      <div id="logout-btn" class="hidden"></div>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <header class="admin-topbar">
+      <button class="admin-sidebar-toggle">
+        <i class="ph-bold ph-list"></i>
+      </button>
+      <div>
+        <h2 style="font-size: 1.2rem; font-weight: 600;">Card Management</h2>
+        <p style="font-size: 0.8rem; color: var(--text-400);">Approve requests or freeze existing cards.</p>
+      </div>
+      <div class="flex items-center gap-16">
+        <div class="admin-badge bg-warning bg-opacity-10 text-warning" id="pending-count">0 Pending</div>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      
+      <div class="admin-card">
+        <table class="admin-table w-full">
+          <thead>
+            <tr>
+              <th>Date Requested</th>
+              <th>Client Name</th>
+              <th>Card Type</th>
+              <th>Requested Card #</th>
+              <th>Status</th>
+              <th class="text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="cards-table">
+            <tr><td colspan="6" class="text-center text-muted py-24"><i class="ph-bold ph-spinner spinner"></i> Loading requests...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </main>
+
+  <script type="module">
+    import { requireAdminAuth, logoutAdmin } from '../assets/js/auth.js';
+    import { getSupabase } from '../assets/js/firebase.js';
+    import { formatDate, showToast, initSidebar } from '../assets/js/utils.js';
+
+    let db;
+    document.addEventListener('DOMContentLoaded', async () => {
+      const admin = await requireAdminAuth();
+      if (!admin) return;
+      
+      db = getSupabase();
+      document.getElementById('logout-btn').addEventListener('click', () => logoutAdmin(false));
+      loadCards();
+      initSidebar();
+    });
+
+    async function loadCards() {
+      const { data, error } = await db.from('cards')
+        .select('*, users(full_name)')
+        .order('created_at', { ascending: false });
+
+      const tbody = document.getElementById('cards-table');
+      if (error || !data || data.length === 0) {
+        document.getElementById('pending-count').textContent = '0 Pending';
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-24">No cards found.</td></tr>';
+        return;
+      }
+
+      const pendingCount = data.filter(c => c.status === 'blocked').length;
+      document.getElementById('pending-count').textContent = `${pendingCount} Pending`;
+      tbody.innerHTML = '';
+
+      data.forEach(card => {
+        const clientName = card.users ? card.users.full_name : card.cardholder;
+        let statusHtml = '';
+        let actionsHtml = '';
+        
+        if (card.status === 'blocked') {
+          statusHtml = '<div class="admin-badge bg-warning bg-opacity-10 text-warning">Pending</div>';
+          actionsHtml = `
+            <button class="btn btn-sm btn-success" onclick="updateCardStatus('${card.id}', 'active')">Approve</button>
+            <button class="btn btn-sm btn-danger ml-8" onclick="updateCardStatus('${card.id}', 'cancelled')">Reject</button>
+          `;
+        } else if (card.status === 'frozen') {
+          statusHtml = '<div class="admin-badge bg-danger bg-opacity-10 text-danger">Frozen</div>';
+          actionsHtml = `
+            <button class="btn btn-sm btn-primary" onclick="updateCardStatus('${card.id}', 'active')">Unfreeze</button>
+          `;
+        } else if (card.status === 'active') {
+          statusHtml = '<div class="admin-badge bg-success bg-opacity-10 text-success">Active</div>';
+          actionsHtml = `
+            <button class="btn btn-sm btn-warning" onclick="updateCardStatus('${card.id}', 'frozen')">Freeze</button>
+          `;
+        } else {
+          statusHtml = `<div class="admin-badge bg-gray-500 bg-opacity-10 text-gray-400">${card.status}</div>`;
+          actionsHtml = `<button class="btn btn-sm" disabled>N/A</button>`;
+        }
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${formatDate(card.created_at)}</td>
+          <td class="font-bold text-white">${clientName}</td>
+          <td><div class="admin-badge" style="background: rgba(26,86,219,0.2); color: #fff;">VISA</div></td>
+          <td style="font-family: monospace;">${card.card_number}</td>
+          <td>${statusHtml}</td>
+          <td class="text-right">
+            ${actionsHtml}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    window.updateCardStatus = async (id, status) => {
+      const { error } = await db.from('cards').update({ status }).eq('id', id);
+      if (error) {
+        showToast('Error updating card status', 'danger');
+      } else {
+        showToast('Card status updated to ' + status, 'success');
+        loadCards();
+      }
+    };
+
+    window.showToast = showToast;
+  </script>
+  <div class="admin-sidebar-overlay"></div>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KYC Verification | American First Financial</title>
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/dashboard.css">
+  <link rel="stylesheet" href="assets/css/animations.css">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <!-- Supabase CDN -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+</head>
+<body class="app-layout">
+  
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-close"><i class="ph-bold ph-x"></i></div>
+      <div class="sidebar-logo"><i class="ph-fill ph-bank"></i></div>
+      <div>
+        <div class="sidebar-brand-name">American First</div>
+        <div class="sidebar-brand-sub">Client Portal</div>
+      </div>
+    </div>
+    
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main Menu</div>
+      <a href="dashboard.html" class="nav-item">
+        <i class="ph-bold ph-squares-four nav-icon"></i> Dashboard
+      </a>
+      <a href="transfers.html" class="nav-item">
+        <i class="ph-bold ph-arrows-left-right nav-icon"></i> Transfers
+      </a>
+      <a href="cards.html" class="nav-item">
+        <i class="ph-bold ph-credit-card nav-icon"></i> Virtual Cards
+      </a>
+      
+      <div class="nav-section-label mt-16">Services</div>
+      <a href="investments.html" class="nav-item">
+        <i class="ph-bold ph-chart-line-up nav-icon"></i> Investments
+      </a>
+      <a href="loans.html" class="nav-item">
+        <i class="ph-bold ph-piggy-bank nav-icon"></i> Loans
+      </a>
+      <a href="kyc.html" class="nav-item active">
+        <i class="ph-bold ph-identification-card nav-icon"></i> KYC Verification
+      </a>
+      <a href="settings.html" class="nav-item">
+        <i class="ph-bold ph-gear nav-icon"></i> Settings
+      </a>
+    </nav>
+    
+    <div class="sidebar-footer">
+      <div class="sidebar-user" onclick="document.getElementById('logout-btn').click()">
+        <img src="https://ui-avatars.com/api/?name=User&background=1a56db&color=fff" class="avatar avatar-sm">
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name">Loading...</div>
+          <div class="sidebar-user-role">Client Account</div>
+        </div>
+        <i class="ph-bold ph-sign-out text-muted" id="logout-btn"></i>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <header class="dash-topbar">
+      <button class="sidebar-toggle">
+        <i class="ph-bold ph-list"></i>
+        <span style="font-size: 0.9rem; font-weight: 600; margin-left: 8px;">Menu</span>
+      </button>
+      <div class="topbar-search">
+        <i class="ph-bold ph-magnifying-glass text-muted"></i>
+        <input type="text" placeholder="Search...">
+      </div>
+    </header>
+
+    <div class="page-header">
+      <h1 class="page-title animate-fade-down">Identity Verification</h1>
+      <p class="page-subtitle animate-fade-down delay-1">Complete KYC to unlock full account limits.</p>
+    </div>
+
+    <div class="page-body">
+      
+      <div class="card max-w-2xl mx-auto animate-fade-up delay-2" style="max-width: 800px;">
+        
+        <div class="alert alert-success mb-24">
+          <i class="ph-bold ph-check-circle"></i>
+          Your account has been reviewed and verified. For reverification, please reupload your documents below.
+        </div>
+
+        <div class="grid grid-2 gap-24">
+          
+          <div class="flex-col gap-16">
+            <div class="p-24 border border-[var(--border)] rounded text-center cursor-pointer hover:bg-[var(--glass)] transition" style="border-style: dashed;" onclick="document.getElementById('id-upload').click()">
+              <i class="ph-bold ph-upload-simple text-3xl text-primary mb-12"></i>
+              <div class="font-bold mb-4">Upload Government ID</div>
+              <p class="text-xs text-muted">Passport, Driver's License, or National ID. (JPG, PNG, PDF)</p>
+              <input type="file" id="id-upload" class="hidden" accept="image/*,.pdf">
+            </div>
+
+            <div class="p-24 border border-[var(--border)] rounded text-center cursor-pointer hover:bg-[var(--glass)] transition" style="border-style: dashed;" onclick="document.getElementById('selfie-upload').click()">
+              <i class="ph-bold ph-camera text-3xl text-primary mb-12"></i>
+              <div class="font-bold mb-4">Take a Selfie</div>
+              <p class="text-xs text-muted">A clear photo of your face.</p>
+              <input type="file" id="selfie-upload" class="hidden" accept="image/*" capture="user">
+            </div>
+
+            <button class="btn btn-primary w-full mt-8" onclick="submitKYC()">Submit Documents</button>
+          </div>
+
+          <div class="bg-[var(--bg-700)] p-24 rounded border border-[var(--border)]">
+            <h4 class="mb-16">Verification Process</h4>
+            <ul class="flex-col gap-12 text-sm text-muted" style="list-style-type: none;">
+              <li class="flex gap-8 items-start">
+                <i class="ph-fill ph-check-circle text-success mt-4"></i>
+                <span>Email Verification (Completed)</span>
+              </li>
+              <li class="flex gap-8 items-start">
+                <i class="ph-fill ph-check-circle text-success mt-4"></i>
+                <span>Identity Document Upload (Completed)</span>
+              </li>
+              <li class="flex gap-8 items-start">
+                <i class="ph-fill ph-check-circle text-success mt-4"></i>
+                <span>Selfie Verification (Completed)</span>
+              </li>
+              <li class="flex gap-8 items-start">
+                <i class="ph-fill ph-check-circle text-success mt-4"></i>
+                <span>Admin Review (Completed)</span>
+              </li>
+            </ul>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <script type="module">
+    import { requireAuth, logout } from './assets/js/auth.js';
+    import { showToast } from './assets/js/utils.js';
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const currentUser = await requireAuth();
+      if (!currentUser) return;
+
+      document.querySelector('.sidebar-user-name').textContent = currentUser.full_name;
+      document.querySelector('.sidebar-user img').src = \`https://ui-avatars.com/api/?name=\${encodeURIComponent(currentUser.full_name)}&background=1a56db&color=fff\`;
+      document.getElementById('logout-btn').addEventListener('click', (e) => { e.stopPropagation(); logout(false); });
+
+      // Init Sidebar
+      import('./assets/js/utils.js').then(m => m.initSidebar());
+
+
+    });
+
+    window.submitKYC = () => {
+      showToast('Documents uploaded successfully! Awaiting admin review.', 'success', 4000);
+    };
+  </script>
+  <div class="sidebar-overlay"></div>
+</body>
+</html>

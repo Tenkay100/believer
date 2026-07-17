@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KYC Reviews | Admin Portal</title>
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <link rel="stylesheet" href="../assets/css/admin.css">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+</head>
+<body class="admin-layout">
+
+  <aside class="admin-sidebar">
+    <div class="admin-sidebar-close"><i class="ph-bold ph-x"></i></div>
+    <div class="admin-sidebar-header">
+      <div class="flex items-center gap-12 mb-8">
+        <div class="brand-logo" style="width: 32px; height: 32px; background: var(--danger); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+          <i class="ph-fill ph-shield-check text-white"></i>
+        </div>
+        <div class="font-bold">Staff Portal</div>
+      </div>
+    </div>
+    
+    <nav class="admin-sidebar-nav">
+      <div style="font-size: 0.65rem; color: var(--text-500); text-transform: uppercase; margin: 12px 12px 4px; font-weight: bold;">Core Management</div>
+      <a href="dashboard.html" class="nav-item">
+        <i class="ph-bold ph-squares-four text-lg"></i> System Overview
+      </a>
+      <a href="users.html" class="nav-item">
+        <i class="ph-bold ph-users text-lg"></i> Client Management
+      </a>
+      <a href="transfers.html" class="nav-item">
+        <i class="ph-bold ph-arrows-left-right text-lg"></i> Transfer Approvals
+      </a>
+      <a href="kyc-review.html" class="nav-item active" style="padding: 10px 12px; display: flex; gap: 10px; color: var(--text-100); text-decoration: none; border-radius: 8px; margin-bottom: 2px;">
+        <i class="ph-bold ph-identification-card text-lg"></i> KYC Reviews
+      </a>
+    </nav>
+  </aside>
+
+  <main class="admin-main">
+    <header class="admin-topbar">
+      <button class="admin-sidebar-toggle">
+        <i class="ph-bold ph-list"></i>
+      </button>
+      <div style="font-size: 1.1rem; font-weight: bold;">KYC Document Review</div>
+      <div class="filter-bar border-none bg-transparent p-0">
+        <button class="filter-chip active" onclick="filterKYC('pending')">Pending</button>
+        <button class="filter-chip" onclick="filterKYC('approved')">Approved</button>
+        <button class="filter-chip" onclick="filterKYC('rejected')">Rejected</button>
+      </div>
+    </header>
+
+    <div class="admin-page-body">
+      
+      <div class="admin-table-card">
+        <div class="table-wrapper">
+          <table id="kyc-table">
+            <thead>
+              <tr>
+                <th>Client</th>
+                <th>Document Type</th>
+                <th>Submitted On</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="kyc-tbody">
+              <tr><td colspan="5" class="text-center py-24 text-muted"><i class="ph-bold ph-spinner spinner"></i> Loading documents...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Document Viewer Modal -->
+  <div class="modal-overlay" id="doc-modal">
+    <div class="modal text-center" style="max-width: 600px;">
+      <h2 class="mb-16 text-left">Document Viewer</h2>
+      <img id="doc-img" src="" alt="Document" style="width: 100%; max-height: 400px; object-fit: contain; border-radius: 8px; margin-bottom: 24px; border: 1px solid var(--border); background: var(--bg-800);">
+      <button class="btn btn-primary w-full" onclick="document.getElementById('doc-modal').classList.remove('active')">Close Viewer</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { requireAdminAuth } from '../assets/js/auth.js';
+    import { dbSelect, dbUpdate } from '../assets/js/firebase.js';
+    import { formatDate, showToast, initSidebar } from '../assets/js/utils.js';
+
+    let currentFilter = 'pending';
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await requireAdminAuth();
+      loadKYC();
+      initSidebar();
+      window.filterKYC = (f) => { currentFilter = f; loadKYC(); };
+    });
+
+    async function loadKYC() {
+      const { data: docs } = await dbSelect('kyc_documents', { 
+        eq: { status: currentFilter },
+        order: { column: 'created_at', ascending: false } 
+      });
+      const tbody = document.getElementById('kyc-tbody');
+      tbody.innerHTML = '';
+      
+      if (!docs || docs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-24">No documents found.</td></tr>';
+        return;
+      }
+
+      for (let doc of docs) {
+        let badgeClass = 'badge-neutral';
+        if (doc.status === 'approved') badgeClass = 'badge-success';
+        if (doc.status === 'rejected') badgeClass = 'badge-danger';
+        if (doc.status === 'pending') badgeClass = 'badge-warning';
+
+        // Get user name
+        const { data: u } = await dbSelect('users', { eq: { id: doc.user_id } });
+        const userName = u && u[0] ? u[0].full_name : 'Unknown User';
+
+        let actions = '';
+        if (doc.status === 'pending') {
+          actions = `
+            <button class="btn btn-ghost btn-sm" onclick="window.viewDoc('${doc.doc_type}')"><i class="ph-bold ph-eye"></i> View</button>
+            <button class="btn btn-success btn-sm" onclick="window.updateKYC('${doc.id}', '${doc.user_id}', 'approved')"><i class="ph-bold ph-check"></i></button>
+            <button class="btn btn-danger btn-sm" onclick="window.updateKYC('${doc.id}', '${doc.user_id}', 'rejected')"><i class="ph-bold ph-x"></i></button>
+          `;
+        } else {
+          actions = `<span class="text-muted text-sm">Reviewed</span>`;
+        }
+
+        tbody.innerHTML += `
+          <tr>
+            <td class="font-bold">${userName}</td>
+            <td class="capitalize">${doc.doc_type.replace('_', ' ')}</td>
+            <td>${formatDate(doc.created_at)}</td>
+            <td><span class="badge ${badgeClass}">${doc.status}</span></td>
+            <td><div class="flex gap-8">${actions}</div></td>
+          </tr>
+        `;
+      }
+    }
+
+    window.updateKYC = async (docId, userId, status) => {
+      if(!confirm(`Mark this document as ${status}?`)) return;
+      
+      await dbUpdate('kyc_documents', { status }, { id: docId });
+      
+      // If approved, check if we should update user's overall KYC status
+      if(status === 'approved') {
+        // In a real app, verify all required docs are approved
+        await dbUpdate('users', { kyc_status: 'approved' }, { id: userId });
+      }
+
+      showToast(`Document ${status}.`, status === 'approved' ? 'success' : 'danger');
+      loadKYC();
+    };
+
+    window.viewDoc = (type) => {
+      const img = document.getElementById('doc-img');
+      // Show mock images based on document type
+      if (type === 'selfie') {
+        img.src = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&h=500&fit=crop';
+      } else {
+        img.src = 'https://images.unsplash.com/photo-1621976498725-728b7eaf712c?w=600&h=400&fit=crop';
+      }
+      document.getElementById('doc-modal').classList.add('active');
+    };
+  </script>
+  <div class="admin-sidebar-overlay"></div>
+</body>
+</html>

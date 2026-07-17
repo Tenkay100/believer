@@ -1,0 +1,47 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // ── 1. DEVELOPMENT MODE RULES (Recommended for initial setup & debugging) ──
+    // Uncomment these rules to allow all reads and writes to storage.
+    /*
+    match /{allPaths=**} {
+      allow read, write: if true;
+    }
+    */
+
+    // ── 2. PRODUCTION MODE RULES (Strict security rules matching row-level document security) ──
+    
+    // Helper: Check if the user is authenticated
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    // Helper: Check if user is an admin
+    function isAdmin() {
+      return isAuth() && (
+        firestore.exists(/databases/(default)/documents/admins/$(request.auth.uid)) ||
+        firestore.exists(/databases/(default)/documents/admins/$(request.auth.token.email))
+      );
+    }
+
+    // KYC Documents Storage Bucket Rules
+    // Rules allow owners to read/write their own documents and admins to audit them.
+    match /kyc_documents/{userId}/{allPaths=**} {
+      allow read: if isAuth() && (request.auth.uid == userId || isAdmin());
+      allow write: if isAuth() && request.auth.uid == userId;
+    }
+    
+    // User Statements & General Storage
+    match /statements/{userId}/{allPaths=**} {
+      allow read: if isAuth() && (request.auth.uid == userId || isAdmin());
+      allow write: if isAuth() && request.auth.uid == userId;
+    }
+
+    // Public Assets (Read-only for anyone, writes for admins only)
+    match /assets/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}

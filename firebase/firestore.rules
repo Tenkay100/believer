@@ -1,0 +1,185 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ── 1. DEVELOPMENT MODE RULES (Recommended for initial setup & debugging) ──
+    // Uncomment these rules to allow all reads and writes while setting up your project.
+    /*
+    match /{document=**} {
+      allow read, write: if true;
+    }
+    */
+
+    // ── 2. PRODUCTION MODE RULES (Strict RLS matching Supabase policies) ──
+    
+    // Helper: Check if the user is authenticated
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    // Helper: Check if user is an admin (exists in 'admins' collection)
+    // Works if admin documents are keyed by auth UID or user email
+    function isAdmin() {
+      return isAuth() && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.token.email))
+      );
+    }
+
+    // Helper: Check if user is a super_admin
+    function isSuperAdmin() {
+      return isAuth() && (
+        get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'super_admin' ||
+        get(/databases/$(database)/documents/admins/$(request.auth.token.email)).data.role == 'super_admin'
+      );
+    }
+
+    // Helper: Check if a user document matches the current logged-in UID
+    function isOwner(userId) {
+      return isAuth() && userId == request.auth.uid;
+    }
+
+    // ── USERS ──
+    match /users/{userId} {
+      allow select, read: if isAuth() && (isOwner(resource.data.auth_id) || isAdmin());
+      allow create: if isAuth();
+      allow update: if isAuth() && (isOwner(resource.data.auth_id) || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // ── ADMINS ──
+    match /admins/{adminId} {
+      allow read: if isAdmin();
+      allow write: if isSuperAdmin();
+    }
+
+    // ── ACCOUNTS ──
+    match /accounts/{accountId} {
+      allow read: if isAuth() && (isOwner(resource.data.user_id) || isAdmin());
+      allow create: if isAuth() && isOwner(request.resource.data.user_id);
+      allow update, delete: if isAdmin();
+    }
+
+    // ── BALANCES ──
+    match /balances/{balanceId} {
+      allow read: if isAuth() && (
+        isAdmin() || 
+        isOwner(get(/databases/$(database)/documents/accounts/$(resource.data.account_id)).data.user_id)
+      );
+      allow write: if isAdmin();
+    }
+
+    // ── TRANSACTIONS ──
+    match /transactions/{txId} {
+      allow read: if isAuth() && (
+        isAdmin() || 
+        isOwner(get(/databases/$(database)/documents/accounts/$(resource.data.account_id)).data.user_id)
+      );
+      allow create: if isAuth() && 
+        isOwner(get(/databases/$(database)/documents/accounts/$(request.resource.data.account_id)).data.user_id);
+      allow update, delete: if isAdmin();
+    }
+
+    // ── TRANSFERS ──
+    match /transfers/{transferId} {
+      allow read: if isAuth() && (
+        isAdmin() || 
+        isOwner(get(/databases/$(database)/documents/accounts/$(resource.data.from_account_id)).data.user_id) ||
+        isOwner(get(/databases/$(database)/documents/accounts/$(resource.data.to_account_id)).data.user_id)
+      );
+      allow create: if isAuth() && 
+        isOwner(get(/databases/$(database)/documents/accounts/$(request.resource.data.from_account_id)).data.user_id);
+      allow update, delete: if isAdmin();
+    }
+
+    // ── CARDS ──
+    match /cards/{cardId} {
+      allow read: if isAuth() && (isOwner(resource.data.user_id) || isAdmin());
+      allow update: if isAuth() && (isOwner(resource.data.user_id) || isAdmin());
+      allow create: if isAuth() && isOwner(request.resource.data.user_id);
+      allow delete: if isAdmin();
+    }
+
+    // ── NOTIFICATIONS ──
+    match /notifications/{notifId} {
+      allow read: if isAuth() && (isOwner(resource.data.user_id) || isAdmin());
+      allow create: if isAuth(); // Allow system notifications creation
+      allow update: if isAuth() && isOwner(resource.data.user_id);
+      allow delete: if isAdmin();
+    }
+
+    // ── SUPPORT TICKETS ──
+    match /support_tickets/{ticketId} {
+      allow read: if isAuth() && (isOwner(resource.data.user_id) || isAdmin());
+      allow create: if isAuth() && isOwner(request.resource.data.user_id);
+      allow update: if isAuth() && (
+        isAdmin() || 
+        (isOwner(resource.data.user_id) && resource.data.status == 'open')
+      );
+      allow delete: if isAdmin();
+    }
+
+    // ── TICKET REPLIES ──
+    match /ticket_replies/{replyId} {
+      allow read: if isAuth() && (
+        isAdmin() || 
+        isOwner(get(/databases/$(database)/documents/support_tickets/$(resource.data.ticket_id)).data.user_id)
+      );
+      allow create: if isAuth() && (
+        isAdmin() || 
+        isOwner(get(/databases/$(database)/documents/support_tickets/$(request.resource.data.ticket_id)).data.user_id)
+      );
+    }
+
+    // ── LOGIN LOGS ──
+    match /login_logs/{logId} {
+      allow read: if isAuth() && (isOwner(resource.data.user_id) || isAdmin());
+      allow create: if true; // Allow logging of both successful and failed attempts
+      allow update, delete: if isAdmin();
+    }
+
+    // ── KYC DOCUMENTS ──
+    match /kyc_documents/{docId} {
+      allow read: if isAuth() && (isOwner(resource.data.user_id) || isAdmin());
+      allow create: if isAuth() && isOwner(request.resource.data.user_id);
+      allow update, delete: if isAdmin();
+    }
+
+    // ── LOANS ──
+    match /loans/{loanId} {
+      allow read: if isAuth() && (isOwner(resource.data.user_id) || isAdmin());
+      allow create: if isAuth() && isOwner(request.resource.data.user_id);
+      allow update, delete: if isAdmin();
+    }
+
+    // ── INVESTMENTS ──
+    match /investments/{invId} {
+      allow read: if isAuth() && (isOwner(resource.data.user_id) || isAdmin());
+      allow create: if isAuth() && isOwner(request.resource.data.user_id);
+      allow update, delete: if isAdmin();
+    }
+
+    // ── SAVINGS GOALS ──
+    match /savings_goals/{goalId} {
+      allow read, write: if isAuth() && (isOwner(resource.data.user_id) || isAdmin());
+      allow create: if isAuth() && isOwner(request.resource.data.user_id);
+    }
+
+    // ── BENEFICIARIES ──
+    match /beneficiaries/{beneficiaryId} {
+      allow read, write: if isAuth() && (isOwner(resource.data.user_id) || isAdmin());
+      allow create: if isAuth() && isOwner(request.resource.data.user_id);
+    }
+
+    // ── ADMIN LOGS ──
+    match /admin_logs/{logId} {
+      allow read, create: if isAdmin();
+    }
+
+    // ── SYSTEM SETTINGS ──
+    match /system_settings/{settingId} {
+      allow read: if true;
+      allow write: if isSuperAdmin();
+    }
+  }
+}

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Client Login | American First Financial</title>
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/animations.css">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <!-- Supabase CDN -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+</head>
+
+<body class="flex-center" style="min-height: 100vh; background: var(--bg-800);">
+
+  <div class="container flex-center w-full">
+    <div class="card card-glass animate-scale-in" style="width: 100%; max-width: 440px; padding: 40px;">
+
+      <div class="text-center mb-32">
+        <div class="flex-center mb-16">
+          <div class="brand-logo"
+            style="width: 48px; height: 48px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+            <i class="ph-fill ph-bank" style="font-size: 1.8rem; color: #fff;"></i>
+          </div>
+        </div>
+        <h2>Welcome Back</h2>
+        <p class="mt-8">Sign in to your client portal.</p>
+      </div>
+
+      <form id="login-form" class="form-group gap-16" autocomplete="off">
+        <div id="login-alert" class="alert hidden"></div>
+
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <div class="input-group">
+            <i class="ph-bold ph-envelope-simple input-icon"></i>
+            <input type="email" id="email" class="form-input" placeholder="Enter your email" required
+              autocomplete="new-password">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="flex-between">
+            <label class="form-label">Password</label>
+            <a href="forgot-password.html" class="text-xs">Forgot password?</a>
+          </div>
+          <div class="input-group">
+            <i class="ph-bold ph-lock-key input-icon"></i>
+            <input type="password" id="password" class="form-input" placeholder="Enter your password" required
+              autocomplete="new-password">
+          </div>
+        </div>
+
+        <button type="submit" id="submit-btn" class="btn btn-primary w-full mt-8" style="padding: 14px;">
+          <span>Secure Sign In</span>
+          <i class="ph-bold ph-arrow-right"></i>
+        </button>
+      </form>
+
+      <div class="text-center mt-24 text-sm text-muted">
+        Don't have an account? <a href="register.html" class="font-bold">Open Account</a>
+      </div>
+
+    </div>
+  </div>
+
+  <script type="module">
+    import { clientLogin, redirectIfLoggedIn } from './assets/js/auth.js';
+    import { getSupabase } from './assets/js/firebase.js';
+
+    // Check if Supabase is properly configured
+    try {
+      getSupabase();
+    } catch (e) {
+      document.getElementById('login-alert').className = 'alert alert-danger animate-fade-in';
+      document.getElementById('login-alert').innerHTML = `<i class="ph-bold ph-warning-circle"></i> <b>Database Connection Error:</b><br>Please configure your <b>SUPABASE_URL</b> and <b>SUPABASE_ANON_KEY</b> in <code>assets/js/firebase.js</code> before logging in.`;
+      document.getElementById('login-alert').classList.remove('hidden');
+    }
+
+    // Redirect if already logged in
+    redirectIfLoggedIn(false);
+
+    const form = document.getElementById('login-form');
+    const alertBox = document.getElementById('login-alert');
+    const submitBtn = document.getElementById('submit-btn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      // UI Loading state
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="ph-bold ph-spinner spinner"></i> Authenticating...';
+      alertBox.classList.add('hidden');
+
+      const res = await clientLogin(email, password);
+
+      if (res.success) {
+        alertBox.className = 'alert alert-success';
+        alertBox.innerHTML = '<i class="ph-bold ph-check-circle"></i> Login successful! Redirecting...';
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 1000);
+      } else {
+        alertBox.className = 'alert alert-danger animate-fade-in';
+        alertBox.innerHTML = `<i class="ph-bold ph-warning-circle"></i> ${res.message}`;
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span>Secure Sign In</span><i class="ph-bold ph-arrow-right"></i>';
+      }
+    });
+  </script>
+</body>
+
+</html>

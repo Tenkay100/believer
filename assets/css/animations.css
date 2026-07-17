@@ -1,0 +1,253 @@
+/* ── ENTRANCE ANIMATIONS ── */
+@keyframes fadeIn {
+  from { opacity: 0; } to { opacity: 1; }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInLeft {
+  from { opacity: 0; transform: translateX(-24px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes fadeInRight {
+  from { opacity: 0; transform: translateX(24px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.animate-fade-in { animation: fadeIn 0.4s ease both; }
+.animate-fade-up { animation: fadeInUp 0.5s ease both; }
+.animate-fade-down { animation: fadeInDown 0.5s ease both; }
+.animate-fade-left { animation: fadeInLeft 0.5s ease both; }
+.animate-fade-right { animation: fadeInRight 0.5s ease both; }
+.animate-scale-in { animation: scaleIn 0.35s ease both; }
+
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.2s; }
+.delay-3 { animation-delay: 0.3s; }
+.delay-4 { animation-delay: 0.4s; }
+.delay-5 { animation-delay: 0.5s; }
+.delay-6 { animation-delay: 0.6s; }
+.delay-7 { animation-delay: 0.7s; }
+.delay-8 { animation-delay: 0.8s; }
+
+/* ── GRADIENT BACKGROUNDS ── */
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.gradient-animate {
+  background: linear-gradient(135deg, #060912, #0d1f40, #091a36, #0a1628);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+}
+.gradient-hero {
+  background: linear-gradient(135deg, #030712 0%, #0d1f40 40%, #0a1628 70%, #060912 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 20s ease infinite;
+}
+
+/* ── FLOATING PARTICLES ── */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.3; }
+  50% { transform: translateY(-20px) rotate(180deg); opacity: 0.6; }
+}
+.particle {
+  position: absolute; width: 4px; height: 4px;
+  background: var(--primary-light); border-radius: 50%;
+  animation: float linear infinite;
+  pointer-events: none;
+}
+
+/* ── PULSE GLOW ── */
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(26,86,219,0.4); }
+  50% { box-shadow: 0 0 20px 8px rgba(26,86,219,0); }
+}
+@keyframes pulseGlowGreen {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.4); }
+  50% { box-shadow: 0 0 20px 8px rgba(16,185,129,0); }
+}
+.pulse-glow { animation: pulseGlow 2s ease-in-out infinite; }
+.pulse-glow-green { animation: pulseGlowGreen 2s ease-in-out infinite; }
+
+/* ── SHIMMER LOADING ── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.shimmer-text {
+  background: linear-gradient(90deg, var(--text-400) 25%, var(--text-100) 50%, var(--text-400) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── COUNTER ANIMATION ── */
+.counter { transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1); }
+
+/* ── CARD FLIP ── */
+.flip-card { perspective: 1000px; cursor: pointer; }
+.flip-card-inner {
+  position: relative; width: 100%; height: 100%;
+  transition: transform 0.7s cubic-bezier(0.4, 0.2, 0.2, 1);
+  transform-style: preserve-3d;
+}
+.flip-card:hover .flip-card-inner,
+.flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
+.flip-card-front, .flip-card-back {
+  position: absolute; width: 100%; height: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 18px;
+}
+.flip-card-back { transform: rotateY(180deg); }
+
+/* ── HERO FLOAT ── */
+@keyframes heroFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+}
+.hero-float { animation: heroFloat 5s ease-in-out infinite; }
+
+/* ── NUMBER TICKER ── */
+@keyframes numberTick {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.number-tick { overflow: hidden; }
+.number-tick span { display: inline-block; animation: numberTick 0.4s ease both; }
+
+/* ── RIPPLE EFFECT ── */
+.ripple { position: relative; overflow: hidden; }
+.ripple::before {
+  content: ''; position: absolute;
+  width: 0; height: 0; border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease, height 0.4s ease, opacity 0.4s ease;
+}
+.ripple:active::before { width: 300px; height: 300px; opacity: 0; }
+
+/* ── TYPING CURSOR ── */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.typing-cursor::after {
+  content: '|'; animation: blink 1s step-end infinite;
+  color: var(--primary-light); margin-left: 2px;
+}
+
+/* ── ORBIT ── */
+@keyframes orbit {
+  from { transform: rotate(0deg) translateX(80px) rotate(0deg); }
+  to { transform: rotate(360deg) translateX(80px) rotate(-360deg); }
+}
+.orbit-item { animation: orbit 8s linear infinite; }
+
+/* ── PROGRESS FILL ── */
+@keyframes fillProgress {
+  from { width: 0; }
+  to { width: var(--progress-value, 70%); }
+}
+.progress-bar.animate { animation: fillProgress 1.2s cubic-bezier(0.4, 0, 0.2, 1) both; animation-delay: 0.3s; }
+
+/* ── SCROLL FADE ── */
+.scroll-reveal {
+  opacity: 0; transform: translateY(30px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.scroll-reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ── NOTIFICATION BELL ── */
+@keyframes bellShake {
+  0%, 100% { transform: rotate(0deg); }
+  20% { transform: rotate(-15deg); }
+  40% { transform: rotate(15deg); }
+  60% { transform: rotate(-10deg); }
+  80% { transform: rotate(10deg); }
+}
+.bell-shake { animation: bellShake 0.6s ease; }
+
+/* ── STATUS DOT ── */
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.3); }
+}
+.status-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  display: inline-block; flex-shrink: 0;
+}
+.status-dot.online { background: var(--success); animation: statusPulse 2s ease infinite; }
+.status-dot.offline { background: var(--danger); }
+.status-dot.away { background: var(--warning); }
+
+/* ── LOADING SCREEN ── */
+.loading-screen {
+  position: fixed; inset: 0;
+  background: var(--bg-900);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  z-index: 9999; transition: opacity 0.5s ease;
+}
+.loading-screen.fade-out { opacity: 0; pointer-events: none; }
+.loading-logo-ring {
+  width: 80px; height: 80px; border-radius: 50%;
+  border: 3px solid rgba(26,86,219,0.2);
+  border-top-color: var(--primary);
+  animation: spin 0.8s linear infinite;
+}
+.loading-logo-inner {
+  position: absolute;
+  width: 60px; height: 60px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; font-weight: 900; color: #fff;
+}
+.loading-text { margin-top: 20px; font-size: 0.85rem; color: var(--text-400); letter-spacing: 2px; text-transform: uppercase; }
+.loading-dots::after {
+  content: '';
+  animation: dots 1.5s steps(4, end) infinite;
+}
+@keyframes dots {
+  0%   { content: ''; }
+  25%  { content: '.'; }
+  50%  { content: '..'; }
+  75%  { content: '...'; }
+  100% { content: ''; }
+}
+
+/* ── TRANSFER STEPS ── */
+.transfer-step {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px; border-radius: var(--radius);
+  border: 2px solid var(--border);
+  background: var(--bg-700);
+  transition: all var(--transition);
+}
+.transfer-step.active { border-color: var(--primary); background: rgba(26,86,219,0.05); }
+.transfer-step.done { border-color: var(--success); background: rgba(16,185,129,0.05); }
+.step-number {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.85rem; font-weight: 700; flex-shrink: 0;
+  background: var(--bg-500); color: var(--text-400);
+  border: 2px solid var(--border);
+}
+.transfer-step.active .step-number { background: var(--primary); color: #fff; border-color: var(--primary); }
+.transfer-step.done .step-number { background: var(--success); color: #fff; border-color: var(--success); }

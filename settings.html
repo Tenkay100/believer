@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings | American First Financial</title>
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/dashboard.css">
+  <link rel="stylesheet" href="assets/css/animations.css">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+</head>
+<body class="app-layout">
+  
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-close"><i class="ph-bold ph-x"></i></div>
+      <div class="sidebar-logo"><i class="ph-fill ph-bank"></i></div>
+      <div>
+        <div class="sidebar-brand-name">American First</div>
+        <div class="sidebar-brand-sub">Client Portal</div>
+      </div>
+    </div>
+    
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main Menu</div>
+      <a href="dashboard.html" class="nav-item">
+        <i class="ph-bold ph-squares-four nav-icon"></i> Dashboard
+      </a>
+      <a href="transfers.html" class="nav-item">
+        <i class="ph-bold ph-arrows-left-right nav-icon"></i> Transfers
+      </a>
+      <a href="cards.html" class="nav-item">
+        <i class="ph-bold ph-credit-card nav-icon"></i> Virtual Cards
+      </a>
+      
+      <div class="nav-section-label mt-16">Services</div>
+      <a href="investments.html" class="nav-item">
+        <i class="ph-bold ph-chart-line-up nav-icon"></i> Investments
+      </a>
+      <a href="loans.html" class="nav-item">
+        <i class="ph-bold ph-piggy-bank nav-icon"></i> Loans
+      </a>
+      <a href="kyc.html" class="nav-item">
+        <i class="ph-bold ph-identification-card nav-icon"></i> KYC Verification
+      </a>
+      <a href="settings.html" class="nav-item active">
+        <i class="ph-bold ph-gear nav-icon"></i> Settings
+      </a>
+    </nav>
+    
+    <div class="sidebar-footer">
+      <div class="sidebar-user" onclick="document.getElementById('logout-btn').click()">
+        <img src="https://ui-avatars.com/api/?name=User&background=1a56db&color=fff" id="user-avatar" class="avatar avatar-sm">
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="user-name">Loading...</div>
+          <div class="sidebar-user-role">Client Account</div>
+        </div>
+        <i class="ph-bold ph-sign-out text-muted" id="logout-btn"></i>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="dash-topbar">
+      <button class="sidebar-toggle">
+        <i class="ph-bold ph-list"></i>
+        <span style="font-size: 0.9rem; font-weight: 600; margin-left: 8px;">Menu</span>
+      </button>
+      <div class="topbar-search"></div>
+      <div class="topbar-actions flex gap-12">
+        <div class="topbar-icon-btn">
+          <i class="ph-bold ph-bell"></i>
+        </div>
+        <a href="settings.html" class="topbar-icon-btn active" style="text-decoration: none; color: inherit; background: var(--bg-300);">
+          <i class="ph-bold ph-gear"></i>
+        </a>
+      </div>
+    </header>
+
+    <div class="page-header">
+      <h1 class="page-title animate-fade-down">Account Settings</h1>
+      <p class="page-subtitle animate-fade-down delay-1">Manage your profile, security, and account preferences.</p>
+    </div>
+
+    <div class="page-body">
+      
+      <div class="grid grid-2 gap-24 animate-fade-up delay-2">
+        
+        <!-- Profile Settings -->
+        <div class="card">
+          <div class="flex gap-12 align-center border-b pb-12 mb-16">
+            <div class="bg-primary text-white p-8" style="border-radius: 8px;"><i class="ph-bold ph-user"></i></div>
+            <h2 class="font-bold">Personal Profile</h2>
+          </div>
+          
+          <form id="profile-form" class="flex-col gap-16">
+            <div class="form-group">
+              <label>Full Name</label>
+              <input type="text" id="prof-name" class="input w-full" disabled>
+              <span class="text-xs text-muted mt-4">Name changes require manual review by customer support.</span>
+            </div>
+            <div class="form-group">
+              <label>Email Address</label>
+              <input type="email" id="prof-email" class="input w-full" required>
+            </div>
+            <div class="form-group">
+              <label>Phone Number</label>
+              <input type="tel" id="prof-phone" class="input w-full" placeholder="+1 (555) 000-0000">
+            </div>
+            <div class="form-group">
+              <label>Residential Address</label>
+              <textarea id="prof-address" class="input w-full" rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary w-full mt-8">Update Profile</button>
+          </form>
+        </div>
+
+        <!-- Security Settings -->
+        <div class="flex-col gap-24">
+          
+          <div class="card">
+            <div class="flex gap-12 align-center border-b pb-12 mb-16">
+              <div class="bg-danger text-white p-8" style="border-radius: 8px;"><i class="ph-bold ph-lock-key"></i></div>
+              <h2 class="font-bold">Security & Password</h2>
+            </div>
+            
+            <form id="password-form" class="flex-col gap-16">
+              <div class="form-group">
+                <label>Current Password</label>
+                <input type="password" class="input w-full" required>
+              </div>
+              <div class="form-group">
+                <label>New Password</label>
+                <input type="password" id="new-password" class="input w-full" required minlength="8">
+              </div>
+              <div class="form-group">
+                <label>Confirm New Password</label>
+                <input type="password" id="confirm-password" class="input w-full" required minlength="8">
+              </div>
+              <button type="submit" class="btn btn-primary w-full mt-8">Change Password</button>
+            </form>
+          </div>
+
+          <div class="card">
+            <div class="flex gap-12 align-center border-b pb-12 mb-16">
+              <div class="bg-success text-white p-8" style="border-radius: 8px;"><i class="ph-bold ph-shield-check"></i></div>
+              <h2 class="font-bold">Two-Factor Authentication (2FA)</h2>
+            </div>
+            <p class="text-sm text-muted mb-16">Protect your account with an extra layer of security. We recommend using an authenticator app like Google Authenticator or Authy.</p>
+            <div class="flex-between align-center p-12 bg-[var(--bg-300)]" style="border-radius: 8px; border: 1px solid var(--border-color);">
+              <div>
+                <div class="font-bold text-sm">Authenticator App</div>
+                <div class="text-xs text-danger font-bold mt-4">Currently Disabled</div>
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="showToast('2FA setup is temporarily unavailable.', 'warning')">Enable 2FA</button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <script type="module">
+    import { requireAuth, logout } from './assets/js/auth.js';
+    import { dbUpdate } from './assets/js/firebase.js';
+    import { showToast, Storage } from './assets/js/utils.js';
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const currentUser = await requireAuth();
+      if (!currentUser) return;
+
+      document.getElementById('user-name').textContent = currentUser.full_name;
+      document.getElementById('user-avatar').src = \`https://ui-avatars.com/api/?name=\${encodeURIComponent(currentUser.full_name)}&background=1a56db&color=fff\`;
+      document.getElementById('logout-btn').addEventListener('click', () => logout(false));
+
+      // Init Sidebar
+      import('./assets/js/utils.js').then(m => m.initSidebar());
+
+      // Populate profile data
+      document.getElementById('prof-name').value = currentUser.full_name || '';
+      document.getElementById('prof-email').value = currentUser.email || '';
+      document.getElementById('prof-phone').value = currentUser.phone || '';
+      document.getElementById('prof-address').value = currentUser.address || '';
+
+      // Handle Profile Update
+      document.getElementById('profile-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = e.target.querySelector('button');
+        btn.innerHTML = '<i class="ph-bold ph-spinner spinner"></i> Updating...';
+        btn.disabled = true;
+
+        const email = document.getElementById('prof-email').value;
+        const phone = document.getElementById('prof-phone').value;
+        const address = document.getElementById('prof-address').value;
+
+        const { error } = await dbUpdate('users', { email, phone, address }, { id: currentUser.id });
+        
+        btn.innerHTML = 'Update Profile';
+        btn.disabled = false;
+
+        if (error) {
+          showToast('Failed to update profile.', 'danger');
+        } else {
+          showToast('Profile updated successfully!', 'success');
+        }
+      });
+
+      // Handle Password Change
+      document.getElementById('password-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const np = document.getElementById('new-password').value;
+        const cp = document.getElementById('confirm-password').value;
+
+        if (np !== cp) {
+          showToast('New passwords do not match!', 'danger');
+          return;
+        }
+
+        const btn = e.target.querySelector('button');
+        btn.innerHTML = '<i class="ph-bold ph-spinner spinner"></i> Changing...';
+        btn.disabled = true;
+
+        setTimeout(() => {
+          // If using the local bypass, update the local storage password
+          const mockSession = localStorage.getItem('mock_session');
+          if (mockSession) {
+            Storage.set('mock_pwd_' + currentUser.email, np);
+          }
+          
+          btn.innerHTML = 'Change Password';
+          btn.disabled = false;
+          e.target.reset();
+          showToast('Password changed successfully.', 'success');
+        }, 1000);
+      });
+    });
+
+    window.showToast = showToast;
+  </script>
+  <div class="sidebar-overlay"></div>
+  <script type="module" src="assets/js/client-app.js"></script>
+</body>
+</html>

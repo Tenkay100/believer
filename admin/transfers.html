@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transfer Approvals | Admin Portal</title>
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <link rel="stylesheet" href="../assets/css/admin.css">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+</head>
+<body class="admin-layout">
+
+  <aside class="admin-sidebar">
+    <div class="admin-sidebar-close"><i class="ph-bold ph-x"></i></div>
+    <div class="admin-sidebar-header">
+      <div class="flex items-center gap-12 mb-8">
+        <div class="brand-logo" style="width: 32px; height: 32px; background: var(--danger); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+          <i class="ph-fill ph-shield-check text-white"></i>
+        </div>
+        <div class="font-bold">Staff Portal</div>
+      </div>
+    </div>
+    
+    <nav class="admin-sidebar-nav">
+      <div style="font-size: 0.65rem; color: var(--text-500); text-transform: uppercase; margin: 12px 12px 4px; font-weight: bold;">Core Management</div>
+      <a href="dashboard.html" class="nav-item">
+        <i class="ph-bold ph-squares-four text-lg"></i> System Overview
+      </a>
+      <a href="users.html" class="nav-item">
+        <i class="ph-bold ph-users text-lg"></i> Client Management
+      </a>
+      <a href="transfers.html" class="nav-item active" style="padding: 10px 12px; display: flex; gap: 10px; color: var(--text-100); text-decoration: none; border-radius: 8px; margin-bottom: 2px;">
+        <i class="ph-bold ph-arrows-left-right text-lg"></i> Transfer Approvals
+      </a>
+      <a href="kyc-review.html" class="nav-item">
+        <i class="ph-bold ph-identification-card text-lg"></i> KYC Reviews
+      </a>
+    </nav>
+  </aside>
+
+  <main class="admin-main">
+    <header class="admin-topbar">
+      <button class="admin-sidebar-toggle">
+        <i class="ph-bold ph-list"></i>
+      </button>
+      <div style="font-size: 1.1rem; font-weight: bold;">Transfer Workflow</div>
+      <div class="filter-bar border-none bg-transparent p-0">
+        <button class="filter-chip active" onclick="filterTr('pending')">Pending</button>
+        <button class="filter-chip" onclick="filterTr('completed')">Completed</button>
+        <button class="filter-chip" onclick="filterTr('all')">All</button>
+      </div>
+    </header>
+
+    <div class="admin-page-body">
+      
+      <div class="admin-table-card">
+        <div class="table-wrapper">
+          <table id="transfers-table">
+            <thead>
+              <tr>
+                <th>Ref Number</th>
+                <th>From Account</th>
+                <th>Recipient Name</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="transfers-tbody">
+              <tr><td colspan="6" class="text-center py-24 text-muted"><i class="ph-bold ph-spinner spinner"></i> Loading transfers...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script type="module">
+    import { requireAdminAuth } from '../assets/js/auth.js';
+    import { dbSelect, dbUpdate, getSupabase } from '../assets/js/firebase.js';
+    import { formatCurrency, showToast, initSidebar } from '../assets/js/utils.js';
+
+    let currentFilter = 'pending';
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await requireAdminAuth();
+      loadTransfers();
+      initSidebar();
+      window.filterTr = (f) => { currentFilter = f; loadTransfers(); };
+    });
+
+    async function loadTransfers() {
+      const db = getSupabase();
+      const tbody = document.getElementById('transfers-tbody');
+      tbody.innerHTML = '';
+      
+      let allItems = [];
+
+      // Fetch transfers
+      let tQuery = db.from('transfers').select('*').order('created_at', { ascending: false });
+      if (currentFilter !== 'all') tQuery = tQuery.eq('status', currentFilter);
+      const { data: transfers } = await tQuery;
+      
+      if (transfers) {
+        transfers.forEach(t => allItems.push({...t, item_type: 'transfer'}));
+      }
+
+      // Fetch transactions (withdrawals and exchanges are debits, pending)
+      let txQuery = db.from('transactions').select('*').in('type', ['debit', 'exchange']).order('created_at', { ascending: false });
+      if (currentFilter !== 'all') txQuery = txQuery.eq('status', currentFilter);
+      const { data: txs } = await txQuery;
+
+      if (txs) {
+        txs.forEach(t => allItems.push({...t, item_type: 'transaction'}));
+      }
+
+      // Sort combined
+      allItems.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+      if (allItems.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-24">No pending requests found.</td></tr>';
+        return;
+      }
+
+      for (let req of allItems) {
+        let badgeClass = 'badge-neutral';
+        if (req.status === 'completed') badgeClass = 'badge-success';
+        if (req.status === 'failed' || req.status === 'rejected') badgeClass = 'badge-danger';
+        if (req.status === 'pending') badgeClass = 'badge-warning';
+
+        const acctId = req.item_type === 'transfer' ? req.from_account_id : req.account_id;
+        const { data: acct } = await dbSelect('accounts', { eq: { id: acctId } });
+        const sender = acct && acct[0] ? acct[0].account_number : 'Unknown';
+
+        const ref = req.item_type === 'transfer' ? req.swift_ref : req.ref_no;
+        const nameDesc = req.item_type === 'transfer' ? req.to_name : req.description;
+        const fee = req.fee || 0;
+
+        let actions = '';
+        if (req.status === 'pending') {
+          actions = `
+            <button class="btn btn-success btn-sm" onclick="window.approveReq('${req.item_type}', '${req.id}', '${acctId}', ${req.amount}, ${fee}, '${ref}')"><i class="ph-bold ph-check"></i> Approve</button>
+            <button class="btn btn-danger btn-sm" onclick="window.rejectReq('${req.item_type}', '${req.id}', '${ref}', '${acctId}', ${req.amount}, ${fee})"><i class="ph-bold ph-x"></i> Reject</button>
+          `;
+        } else {
+          actions = `<span class="text-muted text-sm">Processed</span>`;
+        }
+
+        tbody.innerHTML += `
+          <tr>
+            <td class="font-bold font-mono text-xs">${ref}</td>
+            <td>Acct: ...${sender.slice(-4)}</td>
+            <td>${nameDesc}</td>
+            <td class="font-bold">${formatCurrency(req.amount)}</td>
+            <td><span class="badge ${badgeClass}">${req.status}</span></td>
+            <td><div class="flex gap-8">${actions}</div></td>
+          </tr>
+        `;
+      }
+    }
+
+    // ── APPROVAL LOGIC ──
+    window.approveReq = async (itemType, id, accountId, amount, fee, ref_no) => {
+      if(!confirm(`Approve request of $${amount}? This will deduct the balance.`)) return;
+      
+      const db = getSupabase();
+      
+      // 1. Get current balance
+      const { data: bal } = await dbSelect('balances', { eq: { account_id: accountId } });
+      if(!bal || bal.length === 0) { showToast('Account balance not found.', 'danger'); return; }
+      
+      const totalDeduction = amount + fee;
+      const currentAvail = Number(bal[0].available);
+      
+      if(currentAvail < totalDeduction) {
+        showToast('Sender has insufficient available balance!', 'danger');
+        return;
+      }
+      
+      // 2. Deduct balance and clear pending hold
+      const newAvail = currentAvail - totalDeduction;
+      const newPending = Math.max(0, Number(bal[0].pending || 0) - totalDeduction);
+      await dbUpdate('balances', { available: newAvail, pending: newPending }, { account_id: accountId });
+      
+      // 3. Mark completed
+      if (itemType === 'transfer') {
+        await dbUpdate('transfers', { status: 'completed', completed_at: new Date().toISOString() }, { id: id });
+        await dbUpdate('transactions', { status: 'completed' }, { ref_no: ref_no });
+      } else {
+        await dbUpdate('transactions', { status: 'completed' }, { id: id });
+      }
+      
+      // 4. Notification
+      const { data: accountUser } = await dbSelect('accounts', { eq: { id: accountId } });
+      if (accountUser && accountUser[0]) {
+        const { dbInsert } = await import('../assets/js/firebase.js');
+        await dbInsert('notifications', {
+          user_id: accountUser[0].user_id,
+          title: 'Request Approved',
+          message: `Your request (${ref_no}) for $${amount} has been approved.`,
+          type: 'success'
+        });
+      }
+
+      showToast('Request Approved and funds deducted.', 'success');
+      loadTransfers();
+    };
+
+    window.rejectReq = async (itemType, id, ref_no, accountId, amount, fee) => {
+      if(!confirm('Reject this request? This will release the pending hold.')) return;
+
+      const db = getSupabase();
+      
+      // 1. Release pending hold
+      const { data: bal } = await dbSelect('balances', { eq: { account_id: accountId } });
+      if (bal && bal[0]) {
+        const totalToRelease = Number(amount) + Number(fee || 0);
+        const newPending = Math.max(0, Number(bal[0].pending || 0) - totalToRelease);
+        await dbUpdate('balances', { pending: newPending }, { account_id: accountId });
+      }
+
+      // 2. Mark failed/rejected
+      if (itemType === 'transfer') {
+        await dbUpdate('transfers', { status: 'rejected' }, { id: id });
+        await dbUpdate('transactions', { status: 'rejected' }, { ref_no: ref_no });
+      } else {
+        await dbUpdate('transactions', { status: 'rejected' }, { id: id });
+      }
+      
+      // Attempt Notification (just need user ID, but this is a rough approximation)
+      let acctId = null;
+      if (itemType === 'transfer') {
+        const {data: t} = await db.from('transfers').select('from_account_id').eq('id', id).single();
+        if (t) acctId = t.from_account_id;
+      } else {
+        const {data: tx} = await db.from('transactions').select('account_id').eq('id', id).single();
+        if (tx) acctId = tx.account_id;
+      }
+      if (acctId) {
+        const { data: acct } = await db.from('accounts').select('user_id').eq('id', acctId).single();
+        if (acct) {
+          const { dbInsert } = await import('../assets/js/firebase.js');
+          await dbInsert('notifications', {
+            user_id: acct.user_id,
+            title: 'Request Rejected',
+            message: `Your request (${ref_no}) has been rejected.`,
+            type: 'error'
+          });
+        }
+      }
+
+      showToast('Request Rejected.', 'info');
+      loadTransfers();
+    };
+  </script>
+  <div class="admin-sidebar-overlay"></div>
+</body>
+</html>

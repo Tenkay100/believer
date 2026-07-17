@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Client Dashboard | American First Financial</title>
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/dashboard.css">
+  <link rel="stylesheet" href="assets/css/animations.css">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+</head>
+<body class="app-layout">
+  
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-close"><i class="ph-bold ph-x"></i></div>
+      <div class="sidebar-logo"><i class="ph-fill ph-bank"></i></div>
+      <div>
+        <div class="sidebar-brand-name">American First</div>
+        <div class="sidebar-brand-sub">Client Portal</div>
+      </div>
+    </div>
+    
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main Menu</div>
+      <a href="dashboard.html" class="nav-item active">
+        <i class="ph-bold ph-squares-four nav-icon"></i> Dashboard
+      </a>
+      <a href="transfers.html" class="nav-item">
+        <i class="ph-bold ph-arrows-left-right nav-icon"></i> Transfers
+      </a>
+      <a href="cards.html" class="nav-item">
+        <i class="ph-bold ph-credit-card nav-icon"></i> Virtual Cards
+      </a>
+      
+      <div class="nav-section-label mt-16">Services</div>
+      <a href="investments.html" class="nav-item">
+        <i class="ph-bold ph-chart-line-up nav-icon"></i> Investments
+      </a>
+      <a href="loans.html" class="nav-item">
+        <i class="ph-bold ph-piggy-bank nav-icon"></i> Loans
+      </a>
+      <a href="kyc.html" class="nav-item">
+        <i class="ph-bold ph-identification-card nav-icon"></i> KYC Verification
+      </a>
+      <a href="settings.html" class="nav-item">
+        <i class="ph-bold ph-gear nav-icon"></i> Settings
+      </a>
+    </nav>
+    
+    <div class="sidebar-footer">
+      <div class="sidebar-user" onclick="document.getElementById('logout-btn').click()">
+        <img src="https://ui-avatars.com/api/?name=User&background=1a56db&color=fff" id="user-avatar" class="avatar avatar-sm">
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="user-name">Loading...</div>
+          <div class="sidebar-user-role">Client Account</div>
+        </div>
+        <i class="ph-bold ph-sign-out text-muted" id="logout-btn"></i>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="dash-topbar">
+      <button class="sidebar-toggle">
+        <i class="ph-bold ph-list"></i>
+        <span style="font-size: 0.9rem; font-weight: 600; margin-left: 8px;">Menu</span>
+      </button>
+      <div class="topbar-search">
+        <i class="ph-bold ph-magnifying-glass text-muted"></i>
+        <input type="text" placeholder="Search transactions, accounts...">
+      </div>
+      <div class="topbar-actions flex gap-12">
+        <div class="topbar-icon-btn relative" id="notif-btn" style="cursor: pointer;">
+          <i class="ph-bold ph-bell"></i>
+          <span class="notif-dot" id="notif-dot"></span>
+          
+          <div id="notif-dropdown" class="hidden" style="position: absolute; top: 100%; right: 0; width: 300px; background: var(--bg-800); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 100; margin-top: 8px; max-height: 400px; overflow-y: auto;">
+            <div style="padding: 12px 16px; border-bottom: 1px solid var(--border); font-weight: bold; font-size: 0.9rem;">Notifications</div>
+            <div id="notif-list" class="flex-col">
+              <div class="p-16 text-center text-sm text-muted">No notifications</div>
+            </div>
+          </div>
+        </div>
+        <a href="settings.html" class="topbar-icon-btn" style="text-decoration: none; color: inherit;">
+          <i class="ph-bold ph-gear"></i>
+        </a>
+      </div>
+    </header>
+
+    <div class="page-header">
+      <h1 class="page-title animate-fade-down">Overview</h1>
+      <p class="page-subtitle animate-fade-down delay-1">Welcome back. Here is your financial summary.</p>
+    </div>
+
+    <div class="page-body">
+      
+      <!-- Top Section: Balances & Cards -->
+      <div class="grid grid-3 gap-24 mb-24 animate-fade-up delay-2">
+        
+        <div class="balance-widget" style="grid-column: span 2;">
+          <div class="flex-between mb-24 relative z-1">
+            <div class="balance-label">Available Balance</div>
+            <div class="badge badge-success"><i class="ph-bold ph-shield-check"></i> Account Secure</div>
+          </div>
+          <div class="balance-amount relative z-1" id="total-balance">$0.00</div>
+          
+          <div class="flex gap-24 mt-24 relative z-1">
+            <div>
+              <div class="text-xs text-white opacity-70 uppercase tracking-widest">Pending Amount</div>
+              <div class="font-bold text-lg text-white" id="pending-balance">$0.00</div>
+            </div>
+            <div id="account-info-box">
+              <div class="text-xs text-white opacity-70 uppercase tracking-widest">Account Number</div>
+              <div class="font-bold text-lg text-white" id="primary-account">****</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Virtual Card -->
+        <div id="dashboard-card" class="w-full relative" style="max-width: 380px; margin: auto; background: linear-gradient(135deg, #111 0%, #2a2a2a 50%, #111 100%); border-radius: 16px; padding: 24px; color: white; box-shadow: 0 15px 35px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1); overflow: hidden;">
+          <!-- Simulated wavy reflection -->
+          <div style="position: absolute; top: -50%; left: -50%; right: -50%; bottom: -50%; background: linear-gradient(to bottom, rgba(255,255,255,0.05) 0%, transparent 40%, rgba(255,255,255,0.02) 50%, transparent 60%); transform: rotate(-15deg); pointer-events: none;"></div>
+          
+          <div class="flex-between mb-24 relative z-1">
+            <div class="flex items-center gap-8">
+              <i class="ph-fill ph-bank" style="font-size: 1.5rem;"></i>
+              <div style="font-weight: 800; font-size: 1.1rem; letter-spacing: 0.5px;">AMERICAN FIRST</div>
+            </div>
+            <div style="font-size: 0.65rem; letter-spacing: 2px; opacity: 0.8; text-transform: uppercase;">Black Edition</div>
+          </div>
+
+          <div class="flex-between mb-24 relative z-1" style="align-items: flex-end;">
+            <div style="width: 45px; height: 30px; background: linear-gradient(135deg, #ffd700, #b8860b); border-radius: 6px; position: relative; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">
+              <div style="position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: rgba(0,0,0,0.2);"></div>
+              <div style="position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: rgba(0,0,0,0.2);"></div>
+              <div style="position: absolute; top: 25%; left: 20%; right: 20%; bottom: 25%; border: 1px solid rgba(0,0,0,0.2); border-radius: 4px;"></div>
+            </div>
+            <div class="flex gap-12 align-center">
+              <i class="ph-bold ph-contactless-payment text-xl opacity-80"></i>
+            </div>
+          </div>
+
+          <div id="card-number" class="mb-16 relative z-1" style="font-family: 'Courier New', Courier, monospace; font-size: 1.5rem; letter-spacing: 4px; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">**** **** **** ****</div>
+          
+          <div class="flex-between relative z-1">
+            <div class="flex gap-24">
+              <div>
+                <div style="font-size: 0.55rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">Expires End</div>
+                <div id="card-expiry" style="font-size: 0.85rem; font-family: monospace; letter-spacing: 1px; margin-top: 2px;">--/--</div>
+              </div>
+              <div>
+                <div style="font-size: 0.55rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">CVV</div>
+                <div id="card-cvv" style="font-size: 0.85rem; font-family: monospace; letter-spacing: 1px; margin-top: 2px;">***</div>
+              </div>
+            </div>
+            <div style="font-family: monospace; font-size: 1.2rem; font-weight: bold; font-style: italic; opacity: 0.9;">VISA</div>
+          </div>
+          
+          <div id="card-name" class="mt-16 relative z-1" style="font-size: 1rem; letter-spacing: 2px; text-transform: uppercase; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">JOHN DOE</div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="quick-actions mb-24 animate-fade-up delay-3">
+        <a href="transfers.html" class="quick-action">
+          <div class="quick-action-icon bg-primary text-white"><i class="ph-bold ph-paper-plane-tilt"></i></div>
+          <span class="quick-action-label">Send Money</span>
+        </a>
+        <a href="#" class="quick-action" onclick="document.getElementById('withdraw-modal').classList.add('active')">
+          <div class="quick-action-icon bg-success text-white"><i class="ph-bold ph-arrow-up-right"></i></div>
+          <span class="quick-action-label">Withdrawal</span>
+        </a>
+        <a href="cards.html" class="quick-action">
+          <div class="quick-action-icon bg-warning text-white"><i class="ph-bold ph-credit-card"></i></div>
+          <span class="quick-action-label">Cards</span>
+        </a>
+        <a href="#" class="quick-action" onclick="document.getElementById('exchange-modal').classList.add('active')">
+          <div class="quick-action-icon bg-info text-white"><i class="ph-bold ph-swap"></i></div>
+          <span class="quick-action-label">Exchange</span>
+        </a>
+      </div>
+
+      <!-- Lower Section: Analytics & Transactions -->
+      <div class="grid grid-3 gap-24 animate-fade-up delay-4">
+        
+        <!-- Analytics Chart -->
+        <div class="chart-card" style="grid-column: span 2;">
+          <div class="chart-header">
+            <div class="chart-title">Income vs Expenses</div>
+            <div class="chart-filters">
+              <button class="chart-filter">1W</button>
+              <button class="chart-filter active">1M</button>
+              <button class="chart-filter">1Y</button>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="spendingChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="card">
+          <div class="flex-between mb-16">
+            <div class="font-bold">Recent Activity</div>
+            <a href="#" class="text-xs text-primary" onclick="window.downloadStatement()"><i class="ph-bold ph-download-simple"></i> Statement</a>
+          </div>
+          <div id="tx-list" class="flex-col gap-4">
+            <div class="text-center p-24 text-muted text-sm"><i class="ph-bold ph-spinner spinner"></i> Loading...</div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Withdrawal Modal -->
+  <div class="modal-overlay" id="withdraw-modal">
+    <div class="modal text-center" style="max-width: 400px;">
+      <h2 class="mb-16 text-left">Withdraw Funds</h2>
+      <p class="text-left text-sm text-muted mb-16">Enter the amount to withdraw. This request requires bank approval.</p>
+      <div class="form-group text-left mb-16">
+        <label class="form-label">Amount (USD)</label>
+        <div class="input-group">
+          <i class="ph-bold ph-currency-dollar input-icon"></i>
+          <input type="number" id="withdraw-amount" class="form-input" placeholder="0.00" min="1">
+        </div>
+      </div>
+      <button class="btn btn-success w-full" id="confirm-withdraw-btn" onclick="window.submitWithdrawal()">Request Withdrawal</button>
+      <button class="btn btn-ghost w-full mt-8" onclick="document.getElementById('withdraw-modal').classList.remove('active')">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Exchange Modal -->
+  <div class="modal-overlay" id="exchange-modal">
+    <div class="modal text-center" style="max-width: 400px;">
+      <h2 class="mb-16 text-left">Currency Exchange</h2>
+      <p class="text-left text-sm text-muted mb-16">Request an exchange from your primary USD account. Subject to admin approval.</p>
+      
+      <div class="form-group text-left mb-16">
+        <label class="form-label">Amount to Exchange (USD)</label>
+        <div class="input-group">
+          <i class="ph-bold ph-currency-dollar input-icon"></i>
+          <input type="number" id="exchange-amount" class="form-input" placeholder="0.00" min="1">
+        </div>
+      </div>
+
+      <div class="form-group text-left mb-16">
+        <label class="form-label">Target Currency</label>
+        <select id="exchange-currency" class="form-input w-full">
+          <option value="EUR">EUR - Euro</option>
+          <option value="GBP">GBP - British Pound</option>
+          <option value="ZAR">ZAR - South African Rand</option>
+          <option value="JPY">JPY - Japanese Yen</option>
+        </select>
+      </div>
+
+      <button class="btn btn-info w-full" id="confirm-exchange-btn" onclick="window.submitExchange()">Request Exchange</button>
+      <button class="btn btn-ghost w-full mt-8" onclick="document.getElementById('exchange-modal').classList.remove('active')">Cancel</button>
+    </div>
+  </div>
+
+  <div class="sidebar-overlay"></div>
+
+  <script type="module">
+    import { initSidebar } from './assets/js/utils.js';
+    initSidebar();
+  </script>
+  <script type="module" src="assets/js/client-app.js"></script>
+</body>
+</html>

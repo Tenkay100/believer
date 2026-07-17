@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | American First Financial</title>
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <link rel="stylesheet" href="../assets/css/admin.css">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="admin-layout">
+
+  <!-- Admin Sidebar -->
+  <aside class="admin-sidebar">
+    <div class="admin-sidebar-close"><i class="ph-bold ph-x"></i></div>
+    <div class="admin-sidebar-header">
+      <div class="flex items-center gap-12 mb-8">
+        <div class="brand-logo" style="width: 32px; height: 32px; background: var(--danger); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+          <i class="ph-fill ph-shield-check text-white"></i>
+        </div>
+        <div class="font-bold">Staff Portal</div>
+      </div>
+      <div class="admin-badge">Admin Access</div>
+    </div>
+    
+    <nav class="admin-sidebar-nav">
+      <div style="font-size: 0.65rem; color: var(--text-500); text-transform: uppercase; margin: 12px 12px 4px; font-weight: bold;">Core Management</div>
+      <a href="dashboard.html" class="nav-item active" style="padding: 10px 12px; display: flex; gap: 10px; color: var(--text-100); text-decoration: none; border-radius: 8px; margin-bottom: 2px;">
+        <i class="ph-bold ph-squares-four text-lg"></i> System Overview
+      </a>
+      <a href="users.html" class="nav-item" style="padding: 10px 12px; display: flex; gap: 10px; color: var(--text-400); text-decoration: none; border-radius: 8px; margin-bottom: 2px;">
+        <i class="ph-bold ph-users text-lg"></i> Client Management
+      </a>
+      <a href="transfers.html" class="nav-item" style="padding: 10px 12px; display: flex; gap: 10px; color: var(--text-400); text-decoration: none; border-radius: 8px; margin-bottom: 2px;">
+        <i class="ph-bold ph-arrows-left-right text-lg"></i> Transfer Approvals <span class="nav-badge" id="pending-transfer-count" style="background: var(--danger); color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.7rem; margin-left: auto;">0</span>
+      </a>
+      <a href="kyc-review.html" class="nav-item" style="padding: 10px 12px; display: flex; gap: 10px; color: var(--text-400); text-decoration: none; border-radius: 8px; margin-bottom: 2px;">
+        <i class="ph-bold ph-identification-card text-lg"></i> KYC Reviews <span class="nav-badge" id="pending-kyc-count" style="background: var(--warning); color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.7rem; margin-left: auto;">0</span>
+      </a>
+    </nav>
+
+    <div style="padding: 16px; border-top: 1px solid var(--border);">
+      <div class="flex items-center gap-12" style="cursor: pointer;" onclick="document.getElementById('logout-btn').click()">
+        <img src="https://ui-avatars.com/api/?name=Admin" id="admin-avatar" class="avatar avatar-sm">
+        <div style="flex: 1; overflow: hidden;">
+          <div id="admin-name" style="font-size: 0.85rem; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Loading...</div>
+          <div id="admin-role" style="font-size: 0.7rem; color: var(--text-400); text-transform: capitalize;">Staff</div>
+        </div>
+        <i class="ph-bold ph-sign-out text-muted" id="logout-btn"></i>
+      </div>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <header class="admin-topbar">
+      <button class="admin-sidebar-toggle">
+        <i class="ph-bold ph-list"></i>
+        <span style="font-size: 0.9rem; font-weight: 600; margin-left: 8px;">Menu</span>
+      </button>
+      <div style="font-size: 1.1rem; font-weight: bold;">Command Center</div>
+      <div class="flex items-center gap-12">
+        <div class="status-dot online"></div>
+        <span class="text-sm font-bold text-success">System Operational</span>
+      </div>
+    </header>
+
+    <div class="admin-page-body">
+      
+      <div class="grid grid-4 gap-16 mb-24">
+        
+        <div class="report-metric">
+          <div class="label">Total System Balances</div>
+          <div class="value" id="stat-total-balance">$0.00</div>
+          <div class="trend trend-up"><i class="ph-bold ph-trend-up"></i> +4.2% this month</div>
+        </div>
+        
+        <div class="report-metric">
+          <div class="label">Active Clients</div>
+          <div class="value" id="stat-total-users">0</div>
+          <div class="trend trend-up"><i class="ph-bold ph-trend-up"></i> +12 new this week</div>
+        </div>
+        
+        <div class="report-metric" style="border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.05);">
+          <div class="label text-danger font-bold">Pending Transfers</div>
+          <div class="value text-danger" id="stat-pending-transfers">0</div>
+          <div class="text-xs text-muted mt-8">Requires immediate review</div>
+        </div>
+        
+        <div class="report-metric" style="border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.05);">
+          <div class="label text-warning font-bold">Pending KYC</div>
+          <div class="value text-warning" id="stat-pending-kyc">0</div>
+          <div class="text-xs text-muted mt-8">Documents awaiting verification</div>
+        </div>
+
+      </div>
+
+      <div class="grid grid-2 gap-24">
+        
+        <!-- Live Activity Feed -->
+        <div class="admin-table-card">
+          <div class="admin-table-header">
+            <div class="admin-table-title">System Activity Log</div>
+          </div>
+          <div style="padding: 20px;">
+            <div class="audit-timeline" id="audit-feed">
+              <div class="text-center text-muted text-sm py-16"><i class="ph-bold ph-spinner spinner"></i> Fetching logs...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Volume Chart -->
+        <div class="admin-table-card">
+          <div class="admin-table-header">
+            <div class="admin-table-title">Transfer Volume (7 Days)</div>
+          </div>
+          <div style="padding: 20px; height: 300px;">
+            <canvas id="volumeChart"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <div class="admin-sidebar-overlay"></div>
+  <script type="module">
+    import { initSidebar } from '../assets/js/utils.js';
+    initSidebar();
+  </script>
+  <script type="module" src="../assets/js/admin-app.js"></script>
+</body>
+</html>

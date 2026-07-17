@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Virtual Cards | American First Financial</title>
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/dashboard.css">
+  <link rel="stylesheet" href="assets/css/animations.css">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <!-- Supabase CDN -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+</head>
+<body class="app-layout">
+  
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-close"><i class="ph-bold ph-x"></i></div>
+      <div class="sidebar-logo"><i class="ph-fill ph-bank"></i></div>
+      <div>
+        <div class="sidebar-brand-name">American First</div>
+        <div class="sidebar-brand-sub">Client Portal</div>
+      </div>
+    </div>
+    
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main Menu</div>
+      <a href="dashboard.html" class="nav-item">
+        <i class="ph-bold ph-squares-four nav-icon"></i> Dashboard
+      </a>
+      <a href="transfers.html" class="nav-item">
+        <i class="ph-bold ph-arrows-left-right nav-icon"></i> Transfers
+      </a>
+      <a href="cards.html" class="nav-item active">
+        <i class="ph-bold ph-credit-card nav-icon"></i> Virtual Cards
+      </a>
+      
+      <div class="nav-section-label mt-16">Services</div>
+      <a href="investments.html" class="nav-item">
+        <i class="ph-bold ph-chart-line-up nav-icon"></i> Investments
+      </a>
+      <a href="loans.html" class="nav-item">
+        <i class="ph-bold ph-piggy-bank nav-icon"></i> Loans
+      </a>
+      <a href="kyc.html" class="nav-item">
+        <i class="ph-bold ph-identification-card nav-icon"></i> KYC Verification
+      </a>
+      <a href="settings.html" class="nav-item">
+        <i class="ph-bold ph-gear nav-icon"></i> Settings
+      </a>
+    </nav>
+    
+    <div class="sidebar-footer">
+      <div class="sidebar-user" onclick="document.getElementById('logout-btn').click()">
+        <img src="https://ui-avatars.com/api/?name=User&background=1a56db&color=fff" class="avatar avatar-sm">
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name">Loading...</div>
+          <div class="sidebar-user-role">Client Account</div>
+        </div>
+        <i class="ph-bold ph-sign-out text-muted" id="logout-btn"></i>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <header class="dash-topbar">
+      <button class="sidebar-toggle">
+        <i class="ph-bold ph-list"></i>
+        <span style="font-size: 0.9rem; font-weight: 600; margin-left: 8px;">Menu</span>
+      </button>
+      <div class="topbar-search">
+        <i class="ph-bold ph-magnifying-glass text-muted"></i>
+        <input type="text" placeholder="Search cards...">
+      </div>
+    </header>
+
+    <div class="page-header">
+      <div class="flex-between">
+        <div>
+          <h1 class="page-title animate-fade-down">Virtual Cards</h1>
+          <p class="page-subtitle animate-fade-down delay-1">Manage your spending limits and security.</p>
+        </div>
+        <button id="request-card-btn" class="btn btn-primary animate-fade-in delay-2"><i class="ph-bold ph-plus"></i> Request New Visa Card</button>
+      </div>
+    </div>
+
+    <div class="page-body">
+      
+      <div class="grid grid-2 gap-24 animate-fade-up delay-3">
+        
+        <!-- Cards List -->
+        <div class="flex-col gap-24">
+          <div id="cards-container" class="flex-col gap-16">
+            <div class="text-center p-24 text-muted"><i class="ph-bold ph-spinner spinner"></i> Loading...</div>
+          </div>
+
+          <div class="card">
+            <h3 class="mb-16">Card Controls</h3>
+            <div class="flex-col gap-16">
+
+
+              <div class="flex-between p-12 border border-[var(--border)] rounded">
+                <div class="flex items-center gap-12">
+                  <div class="btn-icon-sm bg-[var(--bg-500)]"><i class="ph-bold ph-globe"></i></div>
+                  <div>
+                    <div class="font-bold text-sm">Online Payments</div>
+                    <div class="text-xs text-muted">Allow internet transactions</div>
+                  </div>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+
+              <div class="flex-between p-12 border border-[var(--border)] rounded">
+                <div class="flex items-center gap-12">
+                  <div class="btn-icon-sm bg-[var(--bg-500)]"><i class="ph-bold ph-money"></i></div>
+                  <div>
+                    <div class="font-bold text-sm">Daily Limit: $5,000</div>
+                    <div class="text-xs text-muted">Adjust spending limit</div>
+                  </div>
+                </div>
+                <button class="btn btn-ghost btn-sm" onclick="window.editDailyLimit()">Edit</button>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Card Transactions -->
+        <div class="card h-full">
+          <h3 class="mb-16">Card Activity</h3>
+          <div class="flex-col gap-12" id="card-activity-list">
+            <div class="text-center p-24 text-muted text-sm">No credit card activity</div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Fund Card Modal -->
+  <div class="modal-overlay" id="fund-modal">
+    <div class="modal text-center" style="max-width: 400px;">
+      <h2 class="mb-16 text-left">Fund Virtual Card</h2>
+      <p class="text-left text-sm text-muted mb-16">Transfer money from your primary checking account to this virtual card.</p>
+      <input type="hidden" id="fund-card-id">
+      <div class="form-group text-left mb-16">
+        <label class="form-label">Amount (USD)</label>
+        <div class="input-group">
+          <i class="ph-bold ph-currency-dollar input-icon"></i>
+          <input type="number" id="fund-amount" class="form-input" placeholder="0.00" min="1">
+        </div>
+      </div>
+      <button class="btn btn-primary w-full" id="confirm-fund-btn" onclick="window.submitFundCard()">Transfer Funds</button>
+      <button class="btn btn-ghost w-full mt-8" onclick="document.getElementById('fund-modal').classList.remove('active')">Cancel</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { requireAuth, logout } from './assets/js/auth.js';
+    import { dbSelect, dbInsert } from './assets/js/firebase.js';
+    import { showToast } from './assets/js/utils.js';
+
+    let currentUser = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      currentUser = await requireAuth();
+      if (!currentUser) return;
+
+      document.querySelector('.sidebar-user-name').textContent = currentUser.full_name;
+      document.querySelector('.sidebar-user img').src = \`https://ui-avatars.com/api/?name=\${encodeURIComponent(currentUser.full_name)}&background=1a56db&color=fff\`;
+      document.getElementById('logout-btn').addEventListener('click', (e) => { e.stopPropagation(); logout(false); });
+
+      loadCards();
+      
+      // Check eligibility
+      checkCardEligibility();
+
+      // Init Sidebar
+      import('./assets/js/utils.js').then(m => m.initSidebar());
+    });
+
+    async function checkCardEligibility() {
+      const btn = document.getElementById('request-card-btn');
+      if (!btn) return;
+
+      // 1. Check existing cards
+      const { data: cards } = await dbSelect('cards', { eq: { user_id: currentUser.id } });
+      if (cards && cards.length > 0) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="ph-bold ph-check"></i> Card Already Active';
+        btn.style.opacity = '0.5';
+        btn.style.cursor = 'not-allowed';
+        return;
+      }
+
+      // 2. Check account age (180 days)
+      const createdAt = new Date(currentUser.created_at);
+      const diffDays = Math.ceil(Math.abs(new Date() - createdAt) / (1000 * 60 * 60 * 24));
+      
+      if (diffDays < 180) {
+        btn.style.opacity = '0.7';
+        // Note: We don't disable it yet so they can click and see the error message
+      }
+    }
+
+    async function ensureAccount() {
+      const { data: accounts } = await dbSelect('accounts', { eq: { user_id: currentUser.id } });
+      if (accounts && accounts.length > 0) return accounts[0];
+
+      // Create a default account if missing
+      const { generateAccountNumber, generateIBAN, generateSWIFT } = await import('./assets/js/utils.js');
+      const accNum = generateAccountNumber();
+      const { data: newAcc, error } = await dbInsert('accounts', {
+        user_id: currentUser.id,
+        account_number: accNum,
+        iban: generateIBAN(accNum),
+        swift: generateSWIFT(),
+        account_type: 'checking',
+        currency: 'USD',
+        status: 'active'
+      });
+      
+      if (error) {
+        console.error("Account Creation Error:", error);
+        return null;
+      }
+      
+      // Init balance
+      await dbInsert('balances', { account_id: newAcc[0].id, available: 1000.00, pending: 0.00 });
+      return newAcc[0];
+    }
+
+    // Hook up request button
+    document.getElementById('request-card-btn').addEventListener('click', async (e) => {
+      const btn = e.currentTarget;
+
+      // Re-verify age check
+      const createdAt = new Date(currentUser.created_at);
+      const diffDays = Math.ceil(Math.abs(new Date() - createdAt) / (1000 * 60 * 60 * 24));
+      if (diffDays < 180) {
+        showToast(`You must be a customer for 180 days before you can request a card.`, 'danger');
+        return;
+      }
+
+      btn.innerHTML = '<i class="ph-bold ph-spinner spinner"></i> Requesting...';
+      btn.disabled = true;
+
+      try {
+        const account = await ensureAccount();
+        if (!account) {
+          showToast('Could not link an active bank account.', 'danger');
+          throw new Error('No account found/created');
+        }
+
+        // Generate card info using utils
+        const { generateCardNumber, generateExpiry, generateCVV } = await import('./assets/js/utils.js');
+        
+        const { error } = await dbInsert('cards', {
+          account_id: account.id,
+          user_id: currentUser.id,
+          card_number: generateCardNumber('visa'),
+          cardholder: currentUser.full_name,
+          expiry: generateExpiry(),
+          cvv_hash: generateCVV('visa'),
+          card_type: 'visa',
+          status: 'active'
+        });
+
+        if (error) {
+          console.error("Card Insert Error:", error);
+          showToast('Failed to request card: ' + (error.message || 'Check database connection'), 'danger');
+        } else {
+          showToast('Virtual Card generated successfully.', 'success');
+          loadCards();
+        }
+      } catch (err) {
+        console.error("Request Card Error:", err);
+      } finally {
+        btn.innerHTML = '<i class="ph-bold ph-plus"></i> Request New Visa Card';
+        btn.disabled = false;
+      }
+    });
+
+    async function loadCards() {
+      const { data: cards } = await dbSelect('cards', { eq: { user_id: currentUser.id } });
+      const container = document.getElementById('cards-container');
+      
+      if (!cards || cards.length === 0) {
+        container.innerHTML = '<div class="text-center p-24 text-muted">No cards found. Request one above.</div>';
+        return;
+      }
+
+      container.innerHTML = '';
+      cards.forEach(card => {
+        const isPending = card.status === 'blocked';
+        const storedBal = localStorage.getItem('card_bal_' + card.id) || '0.00';
+        
+        const cardHtml = `
+          <div class="w-full relative" style="background: linear-gradient(135deg, #111 0%, #2a2a2a 50%, #111 100%); border-radius: 16px; padding: 24px; color: white; box-shadow: 0 15px 35px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1); overflow: hidden; ${isPending ? 'opacity: 0.6;' : ''}">
+            <!-- Simulated wavy reflection -->
+            <div style="position: absolute; top: -50%; left: -50%; right: -50%; bottom: -50%; background: linear-gradient(to bottom, rgba(255,255,255,0.05) 0%, transparent 40%, rgba(255,255,255,0.02) 50%, transparent 60%); transform: rotate(-15deg); pointer-events: none;"></div>
+            
+            ${isPending ? '<div class="badge badge-warning" style="position: absolute; top: 16px; right: 16px;">Pending Approval</div>' : ''}
+            
+            <div class="flex-between mb-24 relative z-1">
+              <div class="flex items-center gap-8">
+                <i class="ph-fill ph-bank" style="font-size: 1.5rem;"></i>
+                <div style="font-weight: 800; font-size: 1.1rem; letter-spacing: 0.5px;">AMERICAN FIRST</div>
+              </div>
+              <div style="font-size: 0.65rem; letter-spacing: 2px; opacity: 0.8; text-transform: uppercase;">Black Edition</div>
+            </div>
+
+            <div class="flex-between mb-24 relative z-1" style="align-items: flex-end;">
+              <div style="width: 45px; height: 30px; background: linear-gradient(135deg, #ffd700, #b8860b); border-radius: 6px; position: relative; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">
+                <!-- Chip details -->
+                <div style="position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: rgba(0,0,0,0.2);"></div>
+                <div style="position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: rgba(0,0,0,0.2);"></div>
+                <div style="position: absolute; top: 25%; left: 20%; right: 20%; bottom: 25%; border: 1px solid rgba(0,0,0,0.2); border-radius: 4px;"></div>
+              </div>
+              <div class="flex gap-12 align-center">
+                <i class="ph-bold ph-contactless-payment text-xl opacity-80"></i>
+                ${!isPending ? `<button class="btn btn-sm" style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(4px);" onclick="window.openFundModal('${card.id}')">Fund Card</button>` : ''}
+              </div>
+            </div>
+
+            <div class="card-number mb-16 relative z-1" style="font-family: 'Courier New', Courier, monospace; font-size: 1.5rem; letter-spacing: 4px; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">${card.card_number}</div>
+            
+            <div class="flex-between relative z-1">
+              <div class="flex gap-24">
+                <div>
+                  <div style="font-size: 0.55rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">Card Balance</div>
+                  <div style="font-size: 0.85rem; font-weight: bold; margin-top: 2px;">$${parseFloat(storedBal).toFixed(2)}</div>
+                </div>
+                <div>
+                  <div style="font-size: 0.55rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">Expires End</div>
+                  <div style="font-size: 0.85rem; font-family: monospace; letter-spacing: 1px; margin-top: 2px;">${card.expiry}</div>
+                </div>
+                <div>
+                  <div style="font-size: 0.55rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">CVV</div>
+                  <div style="font-size: 0.85rem; font-family: monospace; letter-spacing: 1px; margin-top: 2px;">${card.cvv_hash}</div>
+                </div>
+              </div>
+              <div style="font-family: monospace; font-size: 1.2rem; font-weight: bold; font-style: italic; opacity: 0.9;">VISA</div>
+            </div>
+            
+            <div class="mt-16 relative z-1" style="font-size: 1rem; letter-spacing: 2px; text-transform: uppercase; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">${card.cardholder}</div>
+          </div>
+        \`;
+        container.innerHTML += cardHtml;
+      });
+    }
+
+    window.openFundModal = (cardId) => {
+      document.getElementById('fund-card-id').value = cardId;
+      document.getElementById('fund-modal').classList.add('active');
+    };
+
+    window.submitFundCard = async () => {
+      const amount = parseFloat(document.getElementById('fund-amount').value);
+      const cardId = document.getElementById('fund-card-id').value;
+      
+      if (!amount || amount <= 0) {
+        showToast('Enter a valid amount', 'danger');
+        return;
+      }
+
+      const btn = document.getElementById('confirm-fund-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="ph-bold ph-spinner spinner"></i> Processing...';
+
+      const { data: accounts } = await dbSelect('accounts', { eq: { user_id: currentUser.id } });
+      const accountId = accounts[0].id;
+      
+      const { getSupabase } = await import('./assets/js/firebase.js');
+      const db = getSupabase();
+      const { data: b } = await db.from('balances').select('available').eq('account_id', accountId).single();
+      
+      if (!b || parseFloat(b.available) < amount) {
+        showToast('Insufficient funds in checking account.', 'danger');
+        btn.disabled = false;
+        btn.innerHTML = 'Transfer Funds';
+        return;
+      }
+
+      const newAvail = parseFloat(b.available) - amount;
+      await db.from('balances').update({ available: newAvail }).eq('account_id', accountId);
+
+      const currentCardBal = parseFloat(localStorage.getItem('card_bal_' + cardId) || '0');
+      localStorage.setItem('card_bal_' + cardId, (currentCardBal + amount).toFixed(2));
+
+      showToast(`Successfully transferred $${amount.toFixed(2)} to Virtual Card.`, 'success');
+      document.getElementById('fund-modal').classList.remove('active');
+      document.getElementById('fund-amount').value = '';
+      
+      btn.disabled = false;
+      btn.innerHTML = 'Transfer Funds';
+      loadCards();
+    };
+
+    window.editDailyLimit = () => {
+      showToast('Daily limit update requested. Pending admin approval.', 'info');
+    };
+  </script>
+  <div class="sidebar-overlay"></div>
+</body>
+</html>

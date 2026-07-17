@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Investments | American First Financial</title>
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/dashboard.css">
+  <link rel="stylesheet" href="assets/css/animations.css">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+</head>
+<body class="app-layout">
+  
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-close"><i class="ph-bold ph-x"></i></div>
+      <div class="sidebar-logo"><i class="ph-fill ph-bank"></i></div>
+      <div>
+        <div class="sidebar-brand-name">American First</div>
+        <div class="sidebar-brand-sub">Client Portal</div>
+      </div>
+    </div>
+    
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main Menu</div>
+      <a href="dashboard.html" class="nav-item">
+        <i class="ph-bold ph-squares-four nav-icon"></i> Dashboard
+      </a>
+      <a href="transfers.html" class="nav-item">
+        <i class="ph-bold ph-arrows-left-right nav-icon"></i> Transfers
+      </a>
+      <a href="cards.html" class="nav-item">
+        <i class="ph-bold ph-credit-card nav-icon"></i> Virtual Cards
+      </a>
+      
+      <div class="nav-section-label mt-16">Services</div>
+      <a href="investments.html" class="nav-item active">
+        <i class="ph-bold ph-chart-line-up nav-icon"></i> Investments
+      </a>
+      <a href="loans.html" class="nav-item">
+        <i class="ph-bold ph-piggy-bank nav-icon"></i> Loans
+      </a>
+      <a href="kyc.html" class="nav-item">
+        <i class="ph-bold ph-identification-card nav-icon"></i> KYC Verification
+      </a>
+      <a href="settings.html" class="nav-item">
+        <i class="ph-bold ph-gear nav-icon"></i> Settings
+      </a>
+    </nav>
+    
+    <div class="sidebar-footer">
+      <div class="sidebar-user" onclick="document.getElementById('logout-btn').click()">
+        <img src="https://ui-avatars.com/api/?name=User&background=1a56db&color=fff" id="user-avatar" class="avatar avatar-sm">
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="user-name">Loading...</div>
+          <div class="sidebar-user-role">Client Account</div>
+        </div>
+        <i class="ph-bold ph-sign-out text-muted" id="logout-btn"></i>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="dash-topbar">
+      <button class="sidebar-toggle">
+        <i class="ph-bold ph-list"></i>
+        <span style="font-size: 0.9rem; font-weight: 600; margin-left: 8px;">Menu</span>
+      </button>
+      <div class="topbar-search">
+        <i class="ph-bold ph-magnifying-glass text-muted"></i>
+        <input type="text" placeholder="Search assets...">
+      </div>
+      <div class="topbar-actions flex gap-12">
+        <div class="topbar-icon-btn">
+          <i class="ph-bold ph-bell"></i>
+          <span class="notif-dot"></span>
+        </div>
+        <a href="settings.html" class="topbar-icon-btn" style="text-decoration: none; color: inherit;">
+          <i class="ph-bold ph-gear"></i>
+        </a>
+      </div>
+    </header>
+
+    <div class="page-header">
+      <h1 class="page-title animate-fade-down">Wealth & Investments</h1>
+      <p class="page-subtitle animate-fade-down delay-1">Manage your portfolio and explore new market opportunities.</p>
+    </div>
+
+    <div class="page-body">
+      
+      <!-- Top Section -->
+      <div class="grid grid-3 gap-24 mb-24 animate-fade-up delay-2">
+        
+        <!-- Portfolio Balance -->
+        <div class="balance-widget" style="grid-column: span 2; background: linear-gradient(135deg, var(--gray-800), var(--gray-900)); border: 1px solid var(--gray-700);">
+          <div class="flex-between mb-24 relative z-1">
+            <div class="balance-label text-gray-300">Your Investment Journey</div>
+            <div class="badge badge-success"><i class="ph-bold ph-star"></i> Premium Access</div>
+          </div>
+          <div class="relative z-1" style="font-size: 1.4rem; font-weight: bold; margin-bottom: 24px; color: white;">Explore curated market opportunities and grow your wealth seamlessly.</div>
+          
+          <div class="flex gap-24 mt-24 relative z-1">
+            <div>
+              <div class="text-xs text-gray-400 uppercase tracking-widest">Market Status</div>
+              <div class="font-bold text-lg text-success">Active</div>
+            </div>
+            <div>
+              <div class="text-xs text-gray-400 uppercase tracking-widest">Available Cash</div>
+              <div class="font-bold text-lg text-white" id="available-cash">$0.00</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Invest -->
+        <div class="card flex-col gap-16 justify-center">
+          <div class="font-bold text-lg text-center">Ready to Invest?</div>
+          <p class="text-sm text-muted text-center">Discover tailored portfolios curated by our wealth managers.</p>
+          <button class="btn btn-primary w-full" onclick="showToast('Investment marketplace is currently locked for your account level.', 'warning')"><i class="ph-bold ph-briefcase"></i> Explore Portfolios</button>
+        </div>
+      </div>
+
+      <!-- Markets & Assets -->
+      <div class="grid grid-3 gap-24 animate-fade-up delay-3">
+        
+        <!-- Chart -->
+        <div class="chart-card" style="grid-column: span 2;">
+          <div class="chart-header">
+            <div class="chart-title">Portfolio Performance</div>
+            <div class="chart-filters">
+              <button class="chart-filter">1M</button>
+              <button class="chart-filter">3M</button>
+              <button class="chart-filter active">1Y</button>
+            </div>
+          </div>
+          <div class="chart-container" style="height: 250px;">
+            <canvas id="investChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Top Assets -->
+        <div class="card">
+          <div class="flex-between mb-16">
+            <div class="font-bold">Your Assets</div>
+          </div>
+          <div class="flex-col gap-12">
+            
+            <div class="flex-between align-center p-12 bg-[var(--bg-500)]" style="border-radius: 8px;">
+              <div class="flex align-center gap-12">
+                <div style="width: 32px; height: 32px; background: #000; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px;">APPL</div>
+                <div>
+                  <div class="font-bold text-sm">Apple Inc.</div>
+                  <div class="text-xs text-muted">24.5 Shares</div>
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="font-bold text-sm">$4,250.00</div>
+                <div class="text-xs text-success">+1.2%</div>
+              </div>
+            </div>
+
+            <div class="flex-between align-center p-12 bg-[var(--bg-500)]" style="border-radius: 8px;">
+              <div class="flex align-center gap-12">
+                <div style="width: 32px; height: 32px; background: #00457C; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px;">VTI</div>
+                <div>
+                  <div class="font-bold text-sm">Vanguard ETF</div>
+                  <div class="text-xs text-muted">112 Shares</div>
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="font-bold text-sm">$28,500.00</div>
+                <div class="text-xs text-success">+0.8%</div>
+              </div>
+            </div>
+
+            <div class="flex-between align-center p-12 bg-[var(--bg-500)]" style="border-radius: 8px;">
+              <div class="flex align-center gap-12">
+                <div style="width: 32px; height: 32px; background: #F7931A; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px;"><i class="ph-bold ph-currency-btc"></i></div>
+                <div>
+                  <div class="font-bold text-sm">Bitcoin</div>
+                  <div class="text-xs text-muted">0.45 BTC</div>
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="font-bold text-sm">$31,240.00</div>
+                <div class="text-xs text-danger">-2.4%</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <script type="module">
+    import { requireAuth, logout } from './assets/js/auth.js';
+    import { dbSelect } from './assets/js/firebase.js';
+    import { formatCurrency, showToast } from './assets/js/utils.js';
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const currentUser = await requireAuth();
+      if (!currentUser) return;
+
+      document.getElementById('user-name').textContent = currentUser.full_name;
+      document.getElementById('user-avatar').src = \`https://ui-avatars.com/api/?name=\${encodeURIComponent(currentUser.full_name)}&background=1a56db&color=fff\`;
+      document.getElementById('logout-btn').addEventListener('click', () => logout(false));
+
+      // Init Sidebar
+      import('./assets/js/utils.js').then(m => m.initSidebar());
+
+      // Load available cash
+      const { data: accounts } = await dbSelect('accounts', { eq: { user_id: currentUser.id } });
+      if (accounts && accounts.length > 0) {
+        const { data: balances } = await dbSelect('balances', { eq: { account_id: accounts[0].id } });
+        if (balances && balances.length > 0) {
+          document.getElementById('available-cash').textContent = formatCurrency(balances[0].available, accounts[0].currency);
+        }
+      }
+
+      initChart();
+    });
+
+    function initChart() {
+      const ctx = document.getElementById('investChart');
+      if (!ctx) return;
+
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+          datasets: [{
+            label: 'Portfolio Value',
+            data: [98000, 102000, 105000, 101000, 110000, 115000, 122000, 119000, 128000, 134000, 139000, 142500],
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            fill: true,
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { display: false },
+            x: { grid: { display: false }, ticks: { color: '#9ca3af' } }
+          }
+        }
+      });
+    }
+    
+    window.showToast = showToast;
+  </script>
+  <div class="sidebar-overlay"></div>
+</body>
+</html>

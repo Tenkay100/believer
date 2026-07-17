@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>American First Financial | Personal & Business Banking</title>
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/animations.css">
+  <!-- Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <style>
+    /* Custom Styles for Redesigned Landing Page */
+    :root {
+      --aff-blue: #0033a0;
+      --aff-blue-dark: #002266;
+      --aff-accent: #f2a900;
+    }
+
+    body {
+      background-color: var(--bg-900);
+      font-family: 'Inter', sans-serif;
+    }
+
+    .top-strip {
+      background: var(--bg-800);
+      font-size: 0.75rem;
+      padding: 8px 40px;
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .top-strip-links {
+      display: flex;
+      gap: 16px;
+    }
+
+    .top-strip-links a {
+      color: var(--text-400);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .top-strip-links a:hover,
+    .top-strip-links a.active {
+      color: var(--primary);
+    }
+
+    .main-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 40px;
+      background: var(--bg-900);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .main-nav-links {
+      display: flex;
+      gap: 24px;
+      font-weight: 600;
+    }
+
+    .main-nav-links a {
+      color: var(--text-100);
+      text-decoration: none;
+    }
+
+    .main-nav-links a:hover {
+      color: var(--primary);
+    }
+
+    .alert-banner {
+      background: rgba(239, 68, 68, 0.1);
+      border-bottom: 1px solid var(--danger);
+      padding: 12px 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.85rem;
+      color: var(--text-100);
+    }
+
+    .hero-section {
+      background: linear-gradient(135deg, var(--aff-blue-dark) 0%, var(--aff-blue) 100%);
+      color: white;
+      padding: 80px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 400px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-content {
+      max-width: 600px;
+      z-index: 2;
+    }
+
+    .hero-graphics {
+      position: absolute;
+      right: -5%;
+      top: -10%;
+      width: 50%;
+      height: 120%;
+      background: url('https://images.unsplash.com/photo-1563986768494-4dee2763ff3f?w=1000&fit=crop') no-repeat center center;
+      background-size: cover;
+      opacity: 0.4;
+      mask-image: linear-gradient(to left, rgba(0, 0, 0, 1) 50%, rgba(0, 0, 0, 0) 100%);
+      -webkit-mask-image: linear-gradient(to left, rgba(0, 0, 0, 1) 50%, rgba(0, 0, 0, 0) 100%);
+    }
+
+    .tabs-container {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      padding: 24px 0;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-800);
+    }
+
+    .tab-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-400);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-item:hover,
+    .tab-item.active {
+      color: var(--primary);
+    }
+
+    .tab-item i {
+      font-size: 1.5rem;
+    }
+
+    .promo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      padding: 40px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .promo-card {
+      background: var(--bg-800);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      transition: transform 0.3s;
+    }
+
+    .promo-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--primary);
+    }
+
+    .ucount-banner {
+      background: linear-gradient(90deg, #6b21a8, #4c1d95);
+      color: white;
+      padding: 40px;
+      text-align: center;
+      margin: 40px;
+      border-radius: 16px;
+    }
+
+    footer {
+      background: #000;
+      color: #fff;
+      padding: 60px 40px 20px;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 40px;
+      max-width: 1400px;
+      margin: 0 auto;
+      border-bottom: 1px solid #333;
+      padding-bottom: 40px;
+    }
+
+    .footer-col h4 {
+      color: var(--primary);
+      margin-bottom: 16px;
+      font-size: 1rem;
+    }
+
+    .footer-col ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .footer-col ul li {
+      margin-bottom: 12px;
+    }
+
+    .footer-col ul li a {
+      color: #999;
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: color 0.2s;
+    }
+
+    .footer-col ul li a:hover {
+      color: #fff;
+    }
+
+    .footer-bottom {
+      text-align: center;
+      padding-top: 24px;
+      font-size: 0.75rem;
+      color: #666;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 1024px) {
+      .top-strip {
+        display: none;
+      }
+
+      .main-nav {
+        padding: 12px 20px;
+      }
+
+      .main-nav-links {
+        display: none;
+      }
+
+      .main-nav .flex.gap-12 {
+        display: none;
+      }
+
+      .mobile-toggle {
+        display: flex !important;
+      }
+
+      .hero-section {
+        padding: 40px 20px;
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .hero-content {
+        max-width: 100%;
+      }
+
+      .hero-graphics {
+        display: none;
+      }
+
+      .hero-content h1 {
+        font-size: 2rem;
+      }
+
+      .tabs-container {
+        overflow-x: auto;
+        justify-content: flex-start;
+        padding: 16px 20px;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .tab-item {
+        min-width: 80px;
+      }
+
+      .ucount-banner {
+        flex-direction: column;
+        margin: 20px;
+        padding: 30px 20px;
+      }
+
+      .ucount-banner div:first-child {
+        display: none;
+      }
+
+      .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+      }
+    }
+
+    .mobile-menu {
+      position: fixed;
+      inset: 0;
+      background: var(--bg-900);
+      z-index: 200;
+      display: none;
+      flex-direction: column;
+      padding: 40px 24px;
+    }
+
+    .mobile-menu.active {
+      display: flex;
+    }
+
+    .mobile-menu-links {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      margin-top: 40px;
+    }
+
+    .mobile-menu-links a {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-100);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Top Strip -->
+  <div class="top-strip">
+    <div class="top-strip-links">
+      <a href="#" class="active">Personal</a>
+      <a href="#">Business</a>
+      <a href="#">Corporate and Institutions</a>
+      <a href="#">Wealth</a>
+    </div>
+    <div class="top-strip-links">
+      <a href="#">News and Media</a>
+      <a href="#">About us</a>
+      <a href="#">Locate Us</a>
+      <a href="#">Contact us</a>
+      <a href="#"><i class="ph-fill ph-globe"></i> </a>
+    </div>
+  </div>
+
+  <!-- Main Navigation -->
+  <nav class="main-nav">
+    <div class="flex items-center gap-16">
+      <div class="brand-logo"
+        style="width: 40px; height: 40px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+        <i class="ph-fill ph-bank" style="font-size: 1.5rem; color: #fff;"></i>
+      </div>
+      <div class="font-bold text-xl">American First</div>
+    </div>
+    <div class="main-nav-links">
+      <a href="#">Products and Services</a>
+      <a href="#">American First Connect</a>
+      <a href="#">Learn</a>
+    </div>
+    <div class="flex gap-12">
+      <a href="login.html" class="btn btn-secondary">Sign in</a>
+      <a href="register.html" class="btn btn-primary">Open Account</a>
+    </div>
+    <button class="mobile-toggle btn-icon bg-transparent border-none"
+      style="display: none; color: white; font-size: 1.5rem;"
+      onclick="document.getElementById('mobile-menu').classList.add('active')">
+      <i class="ph-bold ph-list"></i>
+    </button>
+  </nav>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" id="mobile-menu">
+    <div class="flex-between">
+      <div class="font-bold text-xl">American First</div>
+      <button class="btn-icon bg-transparent border-none" style="color: white; font-size: 1.5rem;"
+        onclick="document.getElementById('mobile-menu').classList.remove('active')">
+        <i class="ph-bold ph-x"></i>
+      </button>
+    </div>
+    <div class="mobile-menu-links">
+      <a href="#">Products & Services</a>
+      <a href="#">American First Connect</a>
+      <a href="#">Learn</a>
+      <hr style="border: none; border-top: 1px solid var(--border); margin: 8px 0;">
+      <a href="login.html" class="text-primary">Sign in to Banking</a>
+      <a href="register.html" class="text-primary">Open an Account</a>
+    </div>
+  </div>
+
+
+  <!-- Hero Carousel Simulation -->
+  <section class="hero-section animate-fade-in delay-2">
+    <div class="hero-content">
+      <div class="badge bg-white text-black mb-16 font-bold" style="padding: 6px 12px;">NEW EXPERIENCE</div>
+      <h1 class="text-4xl font-bold mb-16" style="line-height: 1.2;">Experience the Refreshed Online Banking</h1>
+      <p class="text-lg mb-32" style="opacity: 0.9;">Sign in as you normally do to explore exciting existing and new
+        features seamlessly.</p>
+      <div class="flex gap-16">
+        <a href="login.html" class="btn btn-primary btn-lg" style="background: white; color: var(--aff-blue);">Sign in
+          to Banking</a>
+        <a href="register.html" class="btn btn-ghost btn-lg"
+          style="color: white; border: 1px solid rgba(255,255,255,0.3);">Open an Account</a>
+      </div>
+    </div>
+    <div class="hero-graphics"></div>
+  </section>
+
+  <!-- Needs Tabs -->
+  <div class="text-center mt-32 mb-16">
+    <h2 class="font-bold text-2xl">What would you like to do today?</h2>
+  </div>
+  <div class="tabs-container animate-fade-up delay-3">
+    <div class="tab-item active">
+      <div class="btn-icon bg-primary text-white"><i class="ph-bold ph-bank"></i></div>
+      <span class="font-bold text-sm mt-4">Bank</span>
+    </div>
+    <div class="tab-item">
+      <div class="btn-icon bg-[var(--bg-700)]"><i class="ph-bold ph-hand-coins"></i></div>
+      <span class="font-bold text-sm mt-4">Borrow</span>
+    </div>
+    <div class="tab-item">
+      <div class="btn-icon bg-[var(--bg-700)]"><i class="ph-bold ph-piggy-bank"></i></div>
+      <span class="font-bold text-sm mt-4">Save</span>
+    </div>
+    <div class="tab-item">
+      <div class="btn-icon bg-[var(--bg-700)]"><i class="ph-bold ph-shield-check"></i></div>
+      <span class="font-bold text-sm mt-4">Insure</span>
+    </div>
+    <div class="tab-item">
+      <div class="btn-icon bg-[var(--bg-700)]"><i class="ph-bold ph-shopping-cart"></i></div>
+      <span class="font-bold text-sm mt-4">Buy</span>
+    </div>
+  </div>
+
+  <!-- Services Grid -->
+  <div class="promo-grid animate-fade-up delay-4">
+    <div class="promo-card">
+      <h3 class="mb-8 text-primary">Everyday banking</h3>
+      <p class="text-sm text-muted mb-16">Enjoy affordable banking that lets you save money while still getting the full
+        banking experience.</p>
+      <a href="register.html" class="font-bold text-sm flex items-center gap-4 text-primary hover:underline">Tell me
+        more <i class="ph-bold ph-caret-right"></i></a>
+    </div>
+
+    <div class="promo-card">
+      <h3 class="mb-8 text-primary">Private banking</h3>
+      <p class="text-sm text-muted mb-16">As Africa’s best Private Bank, we’ll give you access to an exclusive banking
+        experience with comprehensive suite of benefits.</p>
+      <a href="register.html" class="font-bold text-sm flex items-center gap-4 text-primary hover:underline">Tell me
+        more <i class="ph-bold ph-caret-right"></i></a>
+    </div>
+
+    <div class="promo-card">
+      <h3 class="mb-8 text-primary">Youth banking</h3>
+      <p class="text-sm text-muted mb-16">Whether you're a student, entering the job market, or need a bank account for
+        your kids under 16, we've got you covered.</p>
+      <a href="register.html" class="font-bold text-sm flex items-center gap-4 text-primary hover:underline">Tell me
+        more <i class="ph-bold ph-caret-right"></i></a>
+    </div>
+
+    <div class="promo-card">
+      <h3 class="mb-8 text-primary">Professional banking</h3>
+      <p class="text-sm text-muted mb-16">Get a personalised banking experience with access to financial advisors,
+        competitive interest rates, and various lifestyle and travel benefits.</p>
+      <a href="register.html" class="font-bold text-sm flex items-center gap-4 text-primary hover:underline">Tell me
+        more <i class="ph-bold ph-caret-right"></i></a>
+    </div>
+
+    <div class="promo-card">
+      <h3 class="mb-8 text-primary">Banking for Over 55s</h3>
+      <p class="text-sm text-muted mb-16">Discover the simplicity of banking with exclusive rates and benefits for
+        mature clients.</p>
+      <a href="register.html" class="font-bold text-sm flex items-center gap-4 text-primary hover:underline">Tell me
+        more <i class="ph-bold ph-caret-right"></i></a>
+    </div>
+  </div>
+
+  <!-- Featured Highlights Grid -->
+  <div class="promo-grid pt-0">
+    <div class="promo-card"
+      style="background: url('https://images.unsplash.com/photo-1579621970588-a3f5ce599fac?w=500&fit=crop') center/cover; position: relative; overflow: hidden; min-height: 250px;">
+      <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.1));">
+      </div>
+      <div style="position: absolute; bottom: 24px; left: 24px; right: 24px; color: white;">
+        <h3 class="mb-4">Win* a share of R2 million</h3>
+        <p class="text-xs mb-12 opacity-80">Open a qualifying bank account and spend R100 or more. Already have an
+          account? Spend R100 or more to earn an automatic entry. *T&Cs apply</p>
+        <button class="btn btn-primary btn-sm">Tell me more</button>
+      </div>
+    </div>
+
+    <div class="promo-card"
+      style="background: url('https://images.unsplash.com/photo-1601597111158-2fceff292cdc?w=500&fit=crop') center/cover; position: relative; overflow: hidden; min-height: 250px;">
+      <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.1));">
+      </div>
+      <div style="position: absolute; bottom: 24px; left: 24px; right: 24px; color: white;">
+        <h3 class="mb-4">IBR Switch: Need to pay bills?</h3>
+        <p class="text-xs mb-12 opacity-80">Use your Pay@ reference to fetch your bill on the Banking App and pay it in
+          seconds.</p>
+        <button class="btn btn-primary btn-sm">Tell me more</button>
+      </div>
+    </div>
+
+    <div class="promo-card"
+      style="background: url('https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=500&fit=crop') center/cover; position: relative; overflow: hidden; min-height: 250px;">
+      <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.1));">
+      </div>
+      <div style="position: absolute; bottom: 24px; left: 24px; right: 24px; color: white;">
+        <h3 class="mb-4">Protect your valuables</h3>
+        <p class="text-xs mb-12 opacity-80">Against extreme weather. American First Financial Insurance Limited. Ts&Cs
+          apply.</p>
+        <button class="btn btn-primary btn-sm">Get a Quote</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- UCount Banner -->
+  <div class="ucount-banner flex items-center justify-between" style="position: relative; overflow: hidden;">
+    <div
+      style="position: absolute; right: 0; top: 0; bottom: 0; width: 40%; background: url('https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&fit=crop') center/cover; opacity: 0.3; mask-image: linear-gradient(to left, black, transparent);">
+    </div>
+    <div style="position: relative; z-index: 2; text-align: left; max-width: 600px;">
+      <h2 class="text-3xl font-bold mb-8">Swipe and earn with UCount Rewards</h2>
+      <p class="mb-16">Get access to exclusive deals and specials with our loyalty programme for only R25 per month.</p>
+      <button class="btn btn-primary" style="background: white; color: #4c1d95;">Find out more</button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-grid">
+
+      <div class="footer-col">
+        <h4>Get to know us</h4>
+        <ul>
+          <li><a href="#">News and media</a></li>
+          <li><a href="#">Investor relations</a></li>
+          <li><a href="#">American First Financial Group</a></li>
+          <li><a href="#">Who we sponsor</a></li>
+          <li><a href="#">Who we are</a></li>
+          <li><a href="#">Find a branch</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Build a career with us</h4>
+        <p style="font-size: 0.85rem; color: #999; margin-bottom: 12px;">Join our international team and you could move
+          your career forward from the start.</p>
+        <ul>
+          <li><a href="#" style="color: var(--primary);">View opportunities <i class="ph-bold ph-arrow-right"></i></a>
+          </li>
+          <li style="margin-top: 24px;"><strong>System Status</strong></li>
+          <li><a href="#">View Status page</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="text-center mt-32 mb-16">
+      <p style="font-size: 0.85rem; color: #999;">Physical Address: 5 Simmonds street, Selby, Johannesburg, 2001</p>
+    </div>
+
+    <div class="flex justify-center gap-16 mb-24 flex-wrap" style="font-size: 0.8rem;">
+      <a href="#" style="color: #666; text-decoration: none;">Security Centre</a> |
+      <a href="#" style="color: #666; text-decoration: none;">Data Privacy Centre</a> |
+      <a href="#" style="color: #666; text-decoration: none;">Regulatory</a> |
+      <a href="#" style="color: #666; text-decoration: none;">Legal</a> |
+      <a href="#" style="color: #666; text-decoration: none;">Supplier Marketplace</a> |
+      <a href="#" style="color: #666; text-decoration: none;">Manage Cookies</a> |
+      <a href="#" style="color: #666; text-decoration: none;">Terms & Conditions</a> |
+      <a href="#" style="color: #666; text-decoration: none;">Pricing</a>
+    </div>
+
+    <p>American First Financial is a licensed financial services provider in terms of the Financial Advisory and
+      Intermediary Services Act and a registered credit provider in terms of the National Credit Act, registration
+      number NCRCP15.</p>
+    </div>
+  </footer>
+
+</body>
+
+</html>

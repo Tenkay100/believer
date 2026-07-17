@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login | American First Financial</title>
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+</head>
+<body class="flex-center" style="min-height: 100vh; background: #050810;">
+  
+  <div class="container flex-center w-full">
+    <div class="card card-glass animate-scale-in" style="width: 100%; max-width: 440px; padding: 40px; border-color: rgba(239,68,68,0.2); box-shadow: 0 8px 32px rgba(239,68,68,0.05);">
+      
+      <div class="text-center mb-32">
+        <div class="flex-center mb-16">
+          <div class="brand-logo" style="width: 48px; height: 48px; background: linear-gradient(135deg, var(--danger), #991b1b); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+            <i class="ph-fill ph-shield-check" style="font-size: 1.8rem; color: #fff;"></i>
+          </div>
+        </div>
+        <h2>Admin Portal</h2>
+        <p class="mt-8 text-danger" style="font-weight: 600;">Authorized Personnel Only</p>
+      </div>
+
+      <form id="admin-login-form" class="form-group gap-16">
+        <div id="login-alert" class="alert hidden"></div>
+
+        <div class="form-group">
+          <label class="form-label">Admin Email</label>
+          <div class="input-group">
+            <i class="ph-bold ph-envelope-simple input-icon"></i>
+            <input type="text" id="email" class="form-input" placeholder="admin" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Access Code (Password)</label>
+          <div class="input-group">
+            <i class="ph-bold ph-lock-key input-icon"></i>
+            <input type="password" id="password" class="form-input" placeholder="Enter access code" required>
+          </div>
+        </div>
+
+        <button type="submit" id="submit-btn" class="btn btn-danger w-full mt-8" style="padding: 14px;">
+          <i class="ph-bold ph-shield-key"></i>
+          <span>Secure Admin Login</span>
+        </button>
+      </form>
+
+      <div class="text-center mt-24 text-xs text-muted">
+        <i class="ph-fill ph-warning"></i> All access attempts are logged and monitored.
+      </div>
+      <div class="text-center mt-8">
+        <a href="../index.html" class="text-xs text-muted hover:text-primary transition">Return to Main Site</a>
+      </div>
+
+    </div>
+  </div>
+
+  <script type="module">
+    import { adminLogin, redirectIfLoggedIn } from '../assets/js/auth.js';
+    
+    redirectIfLoggedIn(true);
+
+    const form = document.getElementById('admin-login-form');
+    const alertBox = document.getElementById('login-alert');
+    const submitBtn = document.getElementById('submit-btn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="ph-bold ph-spinner spinner"></i> Verifying...';
+      alertBox.classList.add('hidden');
+
+      const res = await adminLogin(email, password);
+
+      if (res.success) {
+        alertBox.className = 'alert alert-success';
+        alertBox.innerHTML = '<i class="ph-bold ph-shield-check"></i> Authorization successful! Redirecting...';
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 1000);
+      } else {
+        alertBox.className = 'alert alert-danger animate-fade-in';
+        alertBox.innerHTML = `<i class="ph-bold ph-warning-circle"></i> ${res.message}`;
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="ph-bold ph-shield-key"></i><span>Secure Admin Login</span>';
+      }
+    });
+  </script>
+</body>
+</html>

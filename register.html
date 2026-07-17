@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Open Account | American First Financial</title>
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/animations.css">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+</head>
+<body class="flex-center" style="min-height: 100vh; background: var(--bg-800); padding: 40px 0;">
+  
+  <div class="container flex-center w-full">
+    <div class="card card-glass animate-scale-in" style="width: 100%; max-width: 500px; padding: 40px;">
+      
+      <div class="text-center mb-32">
+        <div class="flex-center mb-16">
+          <div class="brand-logo" style="width: 48px; height: 48px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+            <i class="ph-fill ph-bank" style="font-size: 1.8rem; color: #fff;"></i>
+          </div>
+        </div>
+        <h2>Open an Account</h2>
+        <p class="mt-8">Join the future of digital banking.</p>
+      </div>
+
+      <form id="register-form" class="form-group gap-16">
+        <div id="register-alert" class="alert hidden"></div>
+
+        <div class="form-group">
+          <label class="form-label">Full Legal Name</label>
+          <div class="input-group">
+            <i class="ph-bold ph-user input-icon"></i>
+            <input type="text" id="fullName" class="form-input" placeholder="John Doe" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <div class="input-group">
+            <i class="ph-bold ph-envelope-simple input-icon"></i>
+            <input type="email" id="email" class="form-input" placeholder="john@example.com" required>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Phone Number (Optional)</label>
+          <div class="input-group">
+            <i class="ph-bold ph-phone input-icon"></i>
+            <input type="tel" id="phone" class="form-input" placeholder="+1 (555) 000-0000">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Home Address</label>
+          <div class="input-group">
+            <i class="ph-bold ph-map-pin input-icon"></i>
+            <input type="text" id="address" class="form-input" placeholder="123 Main St, City, State" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Social Security Number (SSN)</label>
+          <div class="input-group">
+            <i class="ph-bold ph-identification-badge input-icon"></i>
+            <input type="text" id="ssn" class="form-input" placeholder="XXX-XX-XXXX" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Upload ID Card (Front)</label>
+          <div class="input-group">
+            <i class="ph-bold ph-upload-simple input-icon"></i>
+            <input type="file" id="idFront" class="form-input" style="padding-left: 44px;" accept="image/*,.pdf" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Upload ID Card (Back)</label>
+          <div class="input-group">
+            <i class="ph-bold ph-upload-simple input-icon"></i>
+            <input type="file" id="idBack" class="form-input" style="padding-left: 44px;" accept="image/*,.pdf" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Take a Selfie</label>
+          <div class="input-group">
+            <i class="ph-bold ph-camera input-icon"></i>
+            <input type="file" id="selfie" class="form-input" style="padding-left: 44px;" accept="image/*" capture="user" required>
+          </div>
+          <div class="form-hint mt-8">Must be a clear photo of your face for identity verification.</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Create Password</label>
+          <div class="input-group">
+            <i class="ph-bold ph-lock-key input-icon"></i>
+            <input type="password" id="password" class="form-input" placeholder="Minimum 8 characters" required minlength="8">
+          </div>
+          <div class="form-hint mt-8">Must contain at least 8 characters.</div>
+        </div>
+
+        <div class="form-group mt-8 flex" style="flex-direction: row; align-items: flex-start; gap: 10px;">
+          <input type="checkbox" id="terms" required style="margin-top: 4px;">
+          <label for="terms" class="text-xs text-muted">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.</label>
+        </div>
+
+        <button type="submit" id="submit-btn" class="btn btn-primary w-full mt-16" style="padding: 14px;">
+          <span>Create Account</span>
+          <i class="ph-bold ph-arrow-right"></i>
+        </button>
+      </form>
+
+      <div class="text-center mt-24 text-sm text-muted">
+        Already have an account? <a href="login.html" class="font-bold">Sign In</a>
+      </div>
+
+    </div>
+  </div>
+
+  <script type="module">
+    import { register, redirectIfLoggedIn } from './assets/js/auth.js';
+    
+    redirectIfLoggedIn(false);
+
+    const form = document.getElementById('register-form');
+    const alertBox = document.getElementById('register-alert');
+    const submitBtn = document.getElementById('submit-btn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const formData = {
+        fullName: document.getElementById('fullName').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value,
+        address: document.getElementById('address').value,
+        ssn: document.getElementById('ssn').value,
+        password: document.getElementById('password').value
+      };
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="ph-bold ph-spinner spinner"></i> Creating Account...';
+      alertBox.classList.add('hidden');
+
+      const res = await register(formData);
+
+      if (res.success) {
+        alertBox.className = 'alert alert-success animate-fade-in';
+        alertBox.innerHTML = `<i class="ph-bold ph-check-circle"></i> ${res.message}`;
+        form.reset();
+        submitBtn.innerHTML = 'Account Created';
+        
+        setTimeout(() => {
+          window.location.href = 'login.html';
+        }, 3000);
+      } else {
+        alertBox.className = 'alert alert-danger animate-fade-in';
+        alertBox.innerHTML = `<i class="ph-bold ph-warning-circle"></i> ${res.message}`;
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span>Create Account</span><i class="ph-bold ph-arrow-right"></i>';
+      }
+    });
+  </script>
+</body>
+</html>
